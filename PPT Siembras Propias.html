@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPT · Proyecto Siembras Propias</title>
+<style>
+  :root{
+    --navy-0:#041826;--navy-1:#062035;--navy-2:#0a2f4d;--navy-3:#0d3a5c;
+    --cyan:#00B7E8;--cyan-bright:#00D1FF;--lime:#8DC63F;--lime-bright:#A5DB57;--amber:#ffb84d;
+    --txt:#EAF2F8;--txt-dim:#9FB6C9;
+    --card:rgba(255,255,255,0.04);--card-bd:rgba(0,183,232,0.22);
+    --ac-cyan:#00D1FF;--ac-lime:#A5DB57;--ac-amber:#ffb84d;--ac-violet:#c08bff;--ac-grey:#8aa3ba;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:'Segoe UI',Helvetica,Arial,sans-serif;background:#02121e;color:var(--txt);
+    -webkit-font-smoothing:antialiased;overflow:hidden;
+  }
+  /* DECK / SLIDE FRAME */
+  .deck{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .stage{
+    width:1280px;height:720px;position:relative;
+    transform-origin:center center;
+    flex:none;
+  }
+  .slide{
+    position:absolute;inset:0;
+    padding:34px 54px 52px;
+    background:
+      radial-gradient(1100px 600px at 80% -10%, rgba(0,183,232,0.16), transparent 60%),
+      radial-gradient(900px 500px at -5% 110%, rgba(141,198,63,0.12), transparent 55%),
+      linear-gradient(155deg,var(--navy-0) 0%,var(--navy-1) 45%,var(--navy-2) 100%);
+    overflow:hidden;
+    display:none;flex-direction:column;
+    animation:fade .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  /* decorative rings */
+  .ring{position:absolute;border:1px solid rgba(0,183,232,.35);border-radius:50%;pointer-events:none;}
+  .ring.r1{width:240px;height:240px;top:-80px;right:200px;opacity:.18;}
+  .ring.r2{width:90px;height:90px;top:40px;right:80px;opacity:.22;}
+
+  /* SLIDE HEADER (mini) */
+  .s-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex:none;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .mark{width:38px;height:38px;border-radius:50%;
+    background:conic-gradient(from 200deg,var(--cyan),var(--lime),var(--cyan));
+    display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(0,183,232,.4);position:relative;}
+  .brand .mark::after{content:"";width:24px;height:24px;border-radius:50%;background:var(--navy-1);border:2px solid rgba(255,255,255,.15);}
+  .brand .mark::before{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--lime-bright);z-index:2;}
+  .brand .btxt b{font-size:15px;letter-spacing:.3px;}
+  .brand .btxt span{display:block;font-size:8.5px;letter-spacing:2.2px;color:var(--cyan-bright);font-weight:700;margin-top:1px;}
+  .bayer{width:44px;height:44px;border-radius:50%;border:2px solid;
+    border-image:linear-gradient(135deg,var(--cyan),var(--lime)) 1;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:8.5px;letter-spacing:.3px;color:#fff;line-height:1.15;text-align:center;background:rgba(255,255,255,.03);}
+
+  .seclabel{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;letter-spacing:2px;font-weight:800;
+    text-transform:uppercase;color:#fff;background:linear-gradient(90deg,var(--cyan),rgba(0,183,232,.05));
+    padding:6px 16px 6px 12px;border-radius:5px;border-left:3px solid var(--lime);align-self:flex-start;margin-bottom:14px;flex:none;}
+
+  .s-body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;}
+
+  .card{background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:18px 20px;}
+  .grid{display:grid;gap:16px;}
+  .g2{grid-template-columns:1.2fr 1fr;}
+
+  /* COVER */
+  .cover{align-items:flex-start;justify-content:center;}
+  .cover .kicker{display:inline-block;font-size:12px;letter-spacing:4px;font-weight:700;color:var(--txt-dim);text-transform:uppercase;margin-bottom:14px;}
+  .cover h1{font-size:54px;line-height:1.08;font-weight:800;letter-spacing:-.5px;padding-bottom:6px;
+    background:linear-gradient(100deg,var(--cyan-bright) 5%,var(--lime) 95%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .cover .subtitle{font-size:16px;color:var(--txt-dim);margin-top:16px;max-width:820px;line-height:1.55;}
+  .cover .accent-line{height:5px;width:140px;border-radius:3px;margin-top:20px;background:linear-gradient(90deg,var(--cyan),var(--lime));}
+  .cover .cover-meta{display:flex;gap:30px;margin-top:32px;}
+  .cover .cm{border-left:2px solid rgba(0,183,232,.4);padding-left:14px;}
+  .cover .cm b{display:block;font-size:28px;font-weight:800;color:var(--cyan-bright);line-height:1;}
+  .cover .cm.lime b{color:var(--lime-bright);}
+  .cover .cm.amber b{color:var(--amber);}
+  .cover .cm span{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt-dim);font-weight:700;margin-top:6px;display:block;}
+
+  h2.s-title{font-size:26px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px;
+    background:linear-gradient(100deg,var(--cyan-bright),var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent;}
+
+  .premisa{display:flex;gap:11px;align-items:flex-start;margin-top:13px;}
+  .premisa .n{flex:none;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--lime));
+    color:var(--navy-1);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .premisa p{font-size:13px;line-height:1.5;color:var(--txt-dim);}
+  .card .obj-p{font-size:17px;line-height:1.7;color:var(--txt);}
+  .card .obj-p b{color:var(--cyan-bright);}
+
+  /* CONCEPT GRID */
+  .concept-grid{display:grid;grid-template-columns:160px 1fr 1fr 1fr;gap:0;border:1px solid rgba(0,183,232,.18);border-radius:12px;overflow:hidden;}
+  .concept-grid .ch{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;font-weight:800;padding:12px 15px;
+    background:rgba(0,183,232,.10);color:var(--cyan-bright);border-bottom:1px solid rgba(0,183,232,.18);}
+  .concept-grid .ch.pra{color:var(--lime-bright);background:rgba(141,198,63,.10);}
+  .concept-grid .ch.cmp{color:var(--amber);background:rgba(255,184,77,.10);}
+  .concept-grid .cname{padding:15px;font-size:14px;font-weight:800;color:#fff;display:flex;align-items:center;gap:9px;
+    border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);}
+  .concept-grid .cname i{width:9px;height:9px;border-radius:50%;flex:none;}
+  .concept-grid .ccell{padding:15px;font-size:12px;line-height:1.55;color:var(--txt-dim);
+    border-bottom:1px solid rgba(255,255,255,.06);border-left:1px solid rgba(255,255,255,.05);}
+  .concept-grid .ccell.pra{background:rgba(141,198,63,.04);}
+  .concept-grid .ccell.cmp{background:rgba(255,184,77,.04);}
+  .concept-grid .ccell.cmp.span2{grid-row:span 2;display:flex;flex-direction:column;justify-content:center;}
+  .concept-grid .row-last .cname,.concept-grid .row-last .ccell{border-bottom:none;}
+  .concept-grid .ccell b{color:var(--txt);}
+  .concept-note{font-size:12px;color:var(--txt-dim);margin-top:14px;line-height:1.5;padding:11px 16px;border-radius:9px;
+    background:rgba(0,183,232,.06);border:1px dashed rgba(0,183,232,.28);}
+  .concept-note b{color:var(--cyan-bright);}
+
+  /* STATS */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .stat{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025));border:1px solid rgba(0,183,232,.22);
+    border-radius:14px;padding:20px;position:relative;overflow:hidden;}
+  .stat::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--lime));opacity:.7;}
+  .stat .eyebrow{display:block;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--txt-dim);margin-bottom:12px;}
+  .stat .big{display:block;font-size:38px;line-height:1;font-weight:800;color:var(--cyan-bright);margin-bottom:10px;}
+  .stat .copy{font-size:11.5px;color:var(--txt-dim);line-height:1.45;}
+  .stat.lime .big{color:var(--lime-bright);}
+  .stat.lime::after{background:linear-gradient(90deg,var(--lime),var(--cyan));}
+  .stat.amber .big{color:var(--amber);}
+  .stat.amber::after{background:linear-gradient(90deg,var(--amber),var(--lime));}
+
+  /* SPLIT / COMMISSIONS */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .split-cell{border-radius:14px;padding:18px;border:1px solid rgba(0,183,232,.22);
+    background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));}
+  .split-cell.no{border-color:rgba(159,182,201,.28);}
+  .split-cell.si{border-color:rgba(255,184,77,.32);background:linear-gradient(180deg,rgba(255,184,77,.10),rgba(255,184,77,.02));}
+  .split-cell .lbl{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt-dim);font-weight:800;margin-bottom:8px;display:block;}
+  .split-cell .num{font-size:34px;font-weight:800;color:#fff;line-height:1;}
+  .split-cell.si .num{color:var(--amber);}
+  .split-cell .sub{font-size:11.5px;color:var(--txt-dim);margin-top:8px;line-height:1.45;}
+  .bar{height:11px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden;display:flex;margin-top:16px;}
+  .bar .seg-no{background:linear-gradient(90deg,#5a728a,#8aa3ba);}
+  .bar .seg-si{background:linear-gradient(90deg,var(--amber),#ffd089);}
+  .bar-legend{display:flex;justify-content:space-between;font-size:11px;color:var(--txt-dim);margin-top:8px;}
+
+  /* ACTIONS */
+  .action-summary{display:flex;align-items:center;gap:20px;margin-bottom:16px;padding:16px 20px;border-radius:14px;
+    background:linear-gradient(120deg,rgba(141,198,63,.12),rgba(0,183,232,.06));border:1px solid rgba(141,198,63,.28);}
+  .action-summary .as-num{font-size:52px;font-weight:800;color:var(--lime-bright);line-height:1;flex:none;}
+  .action-summary .as-num small{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt-dim);font-weight:700;margin-top:4px;}
+  .action-summary .as-txt{font-size:13px;color:var(--txt-dim);line-height:1.5;}
+  .action-summary .as-txt b{color:var(--txt);}
+  .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;}
+  .action-card{display:grid;grid-template-columns:54px 1fr;gap:13px;align-items:start;padding:15px 16px;border-radius:13px;
+    background:rgba(0,183,232,.05);border:1px solid rgba(0,183,232,.16);position:relative;overflow:hidden;}
+  .action-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac-cyan);}
+  .action-card.r1::before{background:var(--ac-cyan);} .action-card.r1 .qty{color:var(--ac-cyan);}
+  .action-card.r2::before{background:var(--ac-lime);} .action-card.r2 .qty{color:var(--ac-lime);}
+  .action-card.r3::before{background:var(--ac-amber);} .action-card.r3 .qty{color:var(--ac-amber);}
+  .action-card.r4::before{background:var(--ac-violet);} .action-card.r4 .qty{color:var(--ac-violet);}
+  .action-card.r5::before{background:var(--ac-grey);} .action-card.r5 .qty{color:var(--ac-grey);}
+  .action-card.ok{background:rgba(141,198,63,.08);border-color:rgba(141,198,63,.26);}
+  .action-card.ok::before{background:var(--lime);} .action-card.ok .qty{color:var(--lime-bright);}
+  .action-card .qnum{text-align:center;}
+  .action-card .qty{font-size:32px;font-weight:800;line-height:1;}
+  .action-card .qof{font-size:9.5px;color:var(--txt-dim);letter-spacing:.5px;margin-top:3px;display:block;}
+  .action-card .desc b{display:block;font-size:12.5px;color:#fff;margin-bottom:4px;line-height:1.3;}
+  .action-card .desc span{font-size:11px;color:var(--txt-dim);line-height:1.4;display:block;}
+  .action-card .pill{display:inline-block;margin-top:8px;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+    padding:4px 10px;border-radius:999px;background:rgba(0,183,232,.12);border:1px solid rgba(0,183,232,.3);color:var(--cyan-bright);}
+  .action-card.ok .pill{background:rgba(141,198,63,.14);border-color:rgba(141,198,63,.3);color:var(--lime-bright);}
+
+  /* BU CARDS */
+  .bu-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .bu-block{border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,rgba(0,183,232,.12),rgba(0,183,232,.03));border:1px solid rgba(0,183,232,.3);border-top:4px solid var(--cyan-bright);}
+  .bu-block.centro{background:linear-gradient(180deg,rgba(141,198,63,.14),rgba(141,198,63,.03));border-color:rgba(141,198,63,.32);border-top-color:var(--lime-bright);}
+  .bu-block.norte{background:linear-gradient(180deg,rgba(255,184,77,.14),rgba(255,184,77,.03));border-color:rgba(255,184,77,.32);border-top-color:var(--amber);}
+  .bu-block .bu-h{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.10);padding-bottom:12px;margin-bottom:14px;}
+  .bu-block .bu-h b{font-size:24px;font-weight:800;color:#fff;letter-spacing:.4px;}
+  .bu-block .bu-h .bu-tag{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--txt-dim);font-weight:800;}
+  .bu-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+  .bu-kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:11px 10px;text-align:center;}
+  .bu-kpi .k-num{font-size:19px;font-weight:800;color:var(--cyan-bright);line-height:1.1;}
+  .bu-block.centro .bu-kpi .k-num{color:var(--lime-bright);}
+  .bu-block.norte .bu-kpi .k-num{color:var(--amber);}
+  .bu-kpi .k-lbl{font-size:8.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--txt-dim);margin-top:6px;font-weight:700;}
+  .sq-line{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:8px 0;font-size:12px;}
+  .sq-line + .sq-line{border-top:1px dashed rgba(255,255,255,.08);}
+  .sq-line .sq-name{display:flex;align-items:center;gap:8px;color:var(--txt);font-weight:600;}
+  .sq-line .sq-name .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan-bright);flex:none;}
+  .bu-block.centro .sq-line .sq-name .dot{background:var(--lime-bright);}
+  .bu-block.norte .sq-line .sq-name .dot{background:var(--amber);}
+  .sq-line .sq-cuits{font-weight:800;color:#fff;background:rgba(255,255,255,.06);border-radius:999px;padding:2px 11px;font-size:11px;}
+  .sq-line .sq-fact{color:var(--txt-dim);font-size:11px;min-width:64px;text-align:right;}
+  .an-head{font-size:11px;color:var(--cyan-bright);letter-spacing:1px;text-transform:uppercase;margin:4px 0 8px;font-weight:800;}
+  .bu-block.centro .an-head{color:var(--lime-bright);}
+  .bu-block.norte .an-head{color:var(--amber);}
+
+  /* TABLE */
+  .an-table{width:100%;border-collapse:collapse;}
+  .an-table th,.an-table td{padding:9px 12px;font-size:12.5px;text-align:right;border-bottom:1px solid rgba(255,255,255,.07);}
+  .an-table th{color:var(--cyan-bright);font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:800;border-bottom:1px solid rgba(0,183,232,.2);}
+  .an-table th:first-child,.an-table td:first-child{text-align:left;}
+  .an-table td.sq-cell{color:#fff;font-weight:600;}
+  .an-table td .bu-pill{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-right:8px;}
+  .an-table td .bu-pill.sur{background:rgba(0,183,232,.14);border:1px solid rgba(0,183,232,.35);color:var(--cyan-bright);}
+  .an-table td .bu-pill.centro{background:rgba(141,198,63,.14);border:1px solid rgba(141,198,63,.35);color:var(--lime-bright);}
+  .an-table td .bu-pill.norte{background:rgba(255,184,77,.14);border:1px solid rgba(255,184,77,.35);color:var(--amber);}
+  .an-table tr.total td{font-weight:800;color:#fff;border-top:2px solid rgba(255,255,255,.14);border-bottom:none;}
+
+  /* TIMELINE */
+  .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative;margin-top:10px;}
+  .timeline::before{content:"";position:absolute;top:22px;left:8%;right:8%;height:3px;background:linear-gradient(90deg,var(--cyan),var(--lime));border-radius:3px;z-index:0;}
+  .tstep{position:relative;z-index:1;text-align:center;padding:0 10px;}
+  .tdot{width:46px;height:46px;border-radius:50%;margin:0 auto 14px;background:var(--navy-1);border:3px solid var(--cyan);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--cyan-bright);font-size:17px;box-shadow:0 0 16px rgba(0,183,232,.4);}
+  .tstep.done .tdot{border-color:var(--lime);color:var(--lime-bright);box-shadow:0 0 16px rgba(141,198,63,.4);}
+  .tstep b{display:block;font-size:13.5px;margin-bottom:5px;}
+  .tstep span{font-size:11.5px;color:var(--txt-dim);line-height:1.45;display:block;}
+  .tphase{font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--lime-bright);font-weight:700;margin-bottom:6px;display:block;}
+
+  .pending{margin-top:18px;padding:13px 18px;border-radius:10px;background:rgba(141,198,63,.08);border:1px dashed rgba(141,198,63,.45);font-size:12px;color:var(--txt-dim);line-height:1.5;}
+  .pending b{color:var(--lime-bright);}
+
+  .lead{font-size:13px;color:var(--txt-dim);line-height:1.55;margin-bottom:14px;}
+  .lead b{color:var(--txt);}
+
+  /* FOOTER / NAV */
+  .s-foot{position:absolute;left:60px;right:60px;bottom:20px;display:flex;align-items:center;justify-content:space-between;
+    font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt-dim);font-weight:700;flex:none;}
+  .s-foot .ftitle{color:var(--cyan-bright);}
+  .nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;z-index:50;}
+  .nav button{width:42px;height:42px;border-radius:50%;border:1px solid rgba(0,183,232,.4);background:rgba(6,32,53,.85);
+    color:var(--cyan-bright);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(4px);}
+  .nav button:hover{background:rgba(0,183,232,.2);color:#fff;}
+  .nav button:disabled{opacity:.3;cursor:default;}
+  .dots{display:flex;gap:8px;align-items:center;}
+  .dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.2s;}
+  .dots i.on{background:linear-gradient(90deg,var(--cyan),var(--lime));transform:scale(1.25);}
+  .counter{position:fixed;top:18px;right:24px;font-size:12px;letter-spacing:1.5px;color:var(--txt-dim);font-weight:700;z-index:50;}
+  .counter b{color:var(--cyan-bright);}
+  .hint{position:fixed;bottom:24px;right:24px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--txt-dim);opacity:.6;z-index:50;}
+
+  /* MATRIZ DE DEFINICIONES (editable) */
+  .defwrap{overflow:auto;margin-top:4px;max-height:540px;}
+  .deftable{width:100%;border-collapse:separate;border-spacing:0;}
+  .deftable th,.deftable td{border:1px solid rgba(0,183,232,.16);vertical-align:top;}
+  .deftable thead th{background:rgba(0,183,232,.10);color:#fff;font-size:12px;font-weight:800;letter-spacing:.4px;padding:11px 12px;text-align:center;position:sticky;top:0;z-index:2;}
+  .deftable thead th.col-item{width:180px;text-align:left;background:rgba(8,32,53,.96);color:var(--cyan-bright);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;}
+  .deftable thead th.def-sp{border-top:3px solid var(--cyan-bright);}
+  .deftable thead th.def-ca{border-top:3px solid var(--lime-bright);}
+  .deftable thead th.def-sa{border-top:3px solid var(--amber);}
+  .head-input{width:100%;background:transparent;border:none;outline:none;font-family:inherit;text-align:center;color:#fff;font-size:12px;font-weight:800;letter-spacing:.4px;padding:2px 4px;border-radius:5px;cursor:text;}
+  .head-input:hover{background:rgba(255,255,255,.06);}
+  .head-input:focus{background:rgba(0,0,0,.25);box-shadow:0 0 0 1px rgba(0,183,232,.4) inset;}
+  .head-input.head-sub{font-size:9.5px;letter-spacing:1.2px;color:var(--txt-dim);font-weight:700;text-transform:uppercase;margin-top:3px;}
+  .head-input.item-label{text-align:left;color:var(--cyan-bright);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;}
+  .deftable tbody td.row-item{background:rgba(255,255,255,.025);padding:10px 12px;font-size:12.5px;font-weight:700;color:#fff;}
+  .deftable tbody td.row-item .item-input{width:100%;background:transparent;border:none;color:#fff;font-size:12.5px;font-weight:700;font-family:inherit;outline:none;padding:0;}
+  .deftable tbody td.row-item .item-input::placeholder{color:var(--txt-dim);font-weight:600;}
+  .deftable tbody td.cell{padding:8px 10px;background:rgba(255,255,255,.012);}
+  .deftable tbody tr:nth-child(even) td.cell{background:rgba(255,255,255,.025);}
+  .deftable tbody tr:nth-child(even) td.row-item{background:rgba(255,255,255,.04);}
+  .cell-inner{display:flex;flex-direction:column;gap:7px;align-items:stretch;}
+  .mark-btn{align-self:center;width:34px;height:34px;border-radius:9px;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;line-height:1;color:var(--txt-dim);transition:all .18s ease;user-select:none;}
+  .mark-btn:hover{border-color:rgba(0,183,232,.5);}
+  .mark-btn.check{background:rgba(141,198,63,.18);border-color:rgba(141,198,63,.55);color:var(--lime-bright);}
+  .mark-btn.cross{background:rgba(255,99,99,.16);border-color:rgba(255,99,99,.5);color:#ff8585;}
+  .cell-comment{width:100%;min-height:30px;resize:vertical;border-radius:8px;background:rgba(0,0,0,.18);border:1px solid rgba(0,183,232,.16);color:var(--txt);font-size:11px;font-family:inherit;line-height:1.4;padding:6px 8px;outline:none;}
+  .cell-comment::placeholder{color:rgba(159,182,201,.55);}
+  .cell-comment:focus{border-color:rgba(0,183,232,.5);background:rgba(0,0,0,.28);}
+  .def-toolbar{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;flex:none;}
+  .add-row-btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;border:1px dashed rgba(141,198,63,.5);background:rgba(141,198,63,.08);color:var(--lime-bright);padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;letter-spacing:.4px;transition:all .2s ease;}
+  .add-row-btn:hover{background:rgba(141,198,63,.16);}
+  .add-row-btn .plus{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--lime));color:var(--navy-1);font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1;}
+  .def-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--txt-dim);}
+  .def-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .def-legend i{width:16px;height:16px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+  .def-legend i.ck{background:rgba(141,198,63,.18);border:1px solid rgba(141,198,63,.55);color:var(--lime-bright);}
+  .def-legend i.cr{background:rgba(255,99,99,.16);border:1px solid rgba(255,99,99,.5);color:#ff8585;}
+  .row-del{cursor:pointer;color:var(--txt-dim);font-size:14px;border:none;background:transparent;padding:4px 6px;border-radius:6px;line-height:1;}
+  .row-del:hover{color:#ff8585;background:rgba(255,99,99,.12);}
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="stage" id="stage">
+
+    <!-- SLIDE 1 · COVER -->
+    <section class="slide cover active">
+      <div class="ring r1"></div><div class="ring r2"></div>
+      <div class="s-head">
+        <div class="brand"><div class="mark"></div><div class="btxt"><b>Estrategia Comercial</b><span>SIEMBRAS PROPIAS · GTM</span></div></div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <span class="kicker">Proyecto · Siembras Propias</span>
+        <h1>Proyecto Siembras Propias</h1>
+        <div class="subtitle">Relevamiento y regularización de las cuentas de los dueños de distribuidores y de las siembras en las que participan junto a otros socios, para redefinir la estrategia de cada concepto y dimensionar su impacto comercial.</div>
+        <div class="accent-line"></div>
+        <div class="cover-meta">
+          <div class="cm"><b>111</b><span>CUITs analizados</span></div>
+          <div class="cm lime"><b>$66,1 M</b><span>Facturación</span></div>
+          <div class="cm"><b>164.721</b><span>Hectáreas</span></div>
+          <div class="cm amber"><b>$1,2 M</b><span>Comisión en juego</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2 · OBJETIVO + PREMISAS -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Objetivo &amp; Premisas</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <div class="grid g2">
+          <div class="card">
+            <h2 class="s-title">Objetivo del proyecto</h2>
+            <p class="obj-p" style="margin-top:14px;"><b>Regularizar</b> la situación de las cuentas de los dueños de distribuidores y de las siembras en las que participan con otros socios, para lograr una <b>redefinición de la estrategia</b> de los diferentes conceptos (siembra propia, cuenta asociada y siembra asociada).</p>
+          </div>
+          <div class="card">
+            <div class="seclabel">Premisas del relevamiento</div>
+            <div class="premisa"><div class="n">1</div><p>El relevamiento se realizó de manera centralizada, por squad por medio de los RV/AC. Luego se consolidó todo en una misma base de datos.</p></div>
+            <div class="premisa"><div class="n">2</div><p>Evaluar el impacto actual de la definición de no cambiar de categoría lo que corresponde a cuenta asociada y de que siembra asociada quede como productor.</p></div>
+            <div class="premisa"><div class="n">3</div><p>Cada equipo, campaña CP, maíz y GTM debe armar un business case con el impacto de cambio de categoría y modificación de estrategia (incentivar a la declaración).</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Objetivo &amp; Premisas</span></div>
+    </section>
+
+    <!-- SLIDE 3 · CONCEPTOS -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Conceptos generales · Teórico vs. Práctico</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <div class="concept-grid">
+          <div class="ch">Concepto</div>
+          <div class="ch teo">Definición teórica</div>
+          <div class="ch pra">Tratamiento práctico</div>
+          <div class="ch cmp">Condiciones Campaña</div>
+
+          <div class="cname"><i style="background:var(--cyan-bright)"></i>Siembra propia</div>
+          <div class="ccell">Son las HAS asociadas al <b>mismo CUIT y razón social</b> que comercializa con Bayer.</div>
+          <div class="ccell pra">Si un distribuidor siembra con la misma razón social, debe abrirse una <b>cuenta productor</b> para cargarle las HAS.</div>
+          <div class="ccell cmp span2">Si opera con su cuenta distribuidor o si compra para su razón social, tiene el <b>mismo tratamiento que una autocompra</b> con el <b>12% de descuento fijo</b>.</div>
+
+          <div class="cname"><i style="background:var(--lime-bright)"></i>Cuenta asociada</div>
+          <div class="ccell">Es una siembra propia del distribuidor pero con <b>otra razón social</b>.</div>
+          <div class="ccell pra">Categoría <b>ya existente en SAP y en Salesforce</b>: se reclasifica el CUIT a cuenta asociada.</div>
+
+          <div class="cname row-last"><i style="background:var(--amber)"></i>Siembra asociada</div>
+          <div class="ccell row-last">El dueño del distribuidor <b>participa en una sociedad</b> dedicada a producir junto a otros socios.</div>
+          <div class="ccell pra row-last">No existe como categoría: se debe <b>definir dónde encuadrarla</b>, como productor o como cuenta asociada.</div>
+          <div class="ccell cmp row-last">El <b>100% de estos casos</b> operan actualmente como <b>productor Innoba o Premium</b>, es decir tienen el <b>tratamiento tradicional como productor</b>.</div>
+        </div>
+        <div class="concept-note"><b>Nota:</b> en Salesforce y en SAP existen las categorías <b>productor</b>, <b>distribuidor</b> y <b>cuenta asociada</b>. La siembra asociada es el concepto que hoy carece de tratamiento formal y concentra la principal definición pendiente.</div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Conceptos generales</span></div>
+    </section>
+
+    <!-- SLIDE 4 · DIMENSIONAMIENTO + EQUIVALENCIAS -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Dimensionamiento del análisis</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <div class="stat-grid">
+          <div class="stat"><span class="eyebrow">CUITs analizados</span><span class="big">111</span><p class="copy">Casos relevados de siembras de dueños de distribuidores y sociedades vinculadas.</p></div>
+          <div class="stat lime"><span class="eyebrow">CUPs representados</span><span class="big">87</span><p class="copy">Códigos de distribuidor (CUP) que agrupan los 111 CUITs analizados.</p></div>
+          <div class="stat"><span class="eyebrow">Hectáreas relevadas</span><span class="big">164.721</span><p class="copy">HAS de potencial productivo identificadas en el relevamiento consolidado.</p></div>
+          <div class="stat lime"><span class="eyebrow">Facturación asociada</span><span class="big">$66,1 M</span><p class="copy">Facturación vinculada a los CUPs analizados ($66.136.181).</p></div>
+        </div>
+        <div class="concept-note" style="margin-top:14px;"><b>Del total de CUPs,</b> <b style="color:var(--cyan-bright)">27 corresponden a Productor Innoba</b> y <b style="color:var(--lime-bright)">3 a Productor Premium</b>.</div>
+        <div class="seclabel" style="margin-top:18px;">Equivalencias de la facturación de productores</div>
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="stat"><span class="eyebrow">Bolsas de maíz</span><span class="big">60.792</span><p class="copy">Equivalente de la facturación de productores en bolsas de maíz.</p></div>
+          <div class="stat lime"><span class="eyebrow">USD CP</span><span class="big">US$ 8,1 M</span><p class="copy">Equivalente en dólares de cuenta padre (US$ 8.118.390).</p></div>
+          <div class="stat amber"><span class="eyebrow">Kregs GLY</span><span class="big">590</span><p class="copy">Equivalente en kregs de glifosato de la facturación de productores.</p></div>
+        </div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Dimensionamiento</span></div>
+    </section>
+
+    <!-- SLIDE 5 · COMISIONES + SAP -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Impacto en comisiones</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <div class="grid g2">
+          <div class="card">
+            <div class="split">
+              <div class="split-cell no"><span class="lbl">No comisionan</span><div class="num">84</div><p class="sub">Casos que hoy no perciben comisión (siembras propias, OK e inactivos).</p></div>
+              <div class="split-cell si"><span class="lbl">Sí comisionan</span><div class="num">27</div><p class="sub">Cuentas que perciben comisión, distribuidas en <b style="color:var(--amber)">24 centros</b>; a revisar al regularizar.</p></div>
+            </div>
+            <div class="bar"><div class="seg-no" style="width:76%"></div><div class="seg-si" style="width:24%"></div></div>
+            <div class="bar-legend"><span>84 no comisionan</span><span>27 sí comisionan</span></div>
+          </div>
+          <div class="card">
+            <div class="seclabel">Comisión en juego</div>
+            <div class="stat amber" style="padding:20px;"><span class="eyebrow">Comisión total identificada</span><span class="big" style="font-size:44px;">$1,2 M</span><p class="copy">Asociada a los 27 casos que hoy comisionan ($1.203.469). Monto a evaluar al recategorizar de productor a cuenta asociada.</p></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <div class="seclabel">Cuentas asociadas en SAP</div>
+          <div class="split" style="grid-template-columns:auto 1fr;align-items:center;gap:24px;">
+            <div style="text-align:center;"><div style="font-size:44px;font-weight:800;color:var(--lime-bright);line-height:1;">25</div><div style="font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt-dim);font-weight:700;margin-top:6px;">cuentas en SAP</div></div>
+            <p style="font-size:12.5px;color:var(--txt);line-height:1.55;">Hay <b style="color:var(--lime-bright)">25 cuentas en SAP con categoría Cuenta Asociada</b>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Comisiones &amp; SAP</span></div>
+    </section>
+
+    <!-- SLIDE 6 · ACCIONES -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Acciones a realizar</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <div class="action-summary">
+          <span class="as-num">99<small>de 111</small></span>
+          <span class="as-txt">De los 111 CUITs analizados, <b>99 requieren una acción</b> de regularización o definición. Los 12 restantes ya están correctamente categorizados (OK).</span>
+        </div>
+        <div class="actions">
+          <div class="action-card r1"><div class="qnum"><div class="qty">33</div><span class="qof">CUITs</span></div><div class="desc"><b>Pasar a cuenta asociada</b><span>Hoy cargados como cuenta productor; deben reclasificarse a cuenta asociada en SAP.</span><span class="pill">SAP · Cuenta asociada</span></div></div>
+          <div class="action-card r2"><div class="qnum"><div class="qty">32</div><span class="qof">CUITs</span></div><div class="desc"><b>Cargar HAS en cuenta productor</b><span>Distribuidores con siembra propia que deben abrir cuenta productor y cargar sus hectáreas.</span><span class="pill">SF · Cuenta productor</span></div></div>
+          <div class="action-card r3"><div class="qnum"><div class="qty">21</div><span class="qof">CUITs</span></div><div class="desc"><b>Definir siembra asociada</b><span>Casos a definir si encuadran como productor o como cuenta asociada.</span><span class="pill">A definir</span></div></div>
+          <div class="action-card r4"><div class="qnum"><div class="qty">3</div><span class="qof">CUITs</span></div><div class="desc"><b>Revisar cuentas de asesores</b><span>Asesores de distribuidor con siembras que requieren tratamiento específico.</span><span class="pill">Asesor</span></div></div>
+          <div class="action-card r5"><div class="qnum"><div class="qty">10</div><span class="qof">CUITs</span></div><div class="desc"><b>Depurar cuentas inactivas</b><span>Cuentas inactivas a dar de baja o regularizar en la base.</span><span class="pill">Inactivo</span></div></div>
+          <div class="action-card ok"><div class="qnum"><div class="qty">12</div><span class="qof">CUITs</span></div><div class="desc"><b>Sin acción requerida</b><span>Cuentas ya correctamente categorizadas (estado OK).</span></div></div>
+        </div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Acciones a realizar</span></div>
+    </section>
+
+    <!-- SLIDE 7 · DISTRIBUCIÓN POR BU -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Distribución por Business Unit</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <p class="lead">Los 111 CUITs analizados se reparten en <b>3 Business Units</b> y <b>10 squads</b>. BU Sur concentra el mayor volumen de casos; BU Centro, la mayor comisión; y BU Norte aporta el segundo bloque de HAS relevadas. <b>Datos del ejercicio 2025.</b></p>
+        <div class="bu-cards">
+          <div class="bu-block">
+            <div class="bu-h"><b>SUR</b><span class="bu-tag">Business Unit</span></div>
+            <div class="bu-kpis">
+              <div class="bu-kpi"><div class="k-num">62</div><div class="k-lbl">CUITs</div></div>
+              <div class="bu-kpi"><div class="k-num">4</div><div class="k-lbl">Squads</div></div>
+              <div class="bu-kpi"><div class="k-num">$31,8 M</div><div class="k-lbl">Facturación</div></div>
+              <div class="bu-kpi"><div class="k-num">$529 K</div><div class="k-lbl">Comisión</div></div>
+            </div>
+            <div class="an-head">Squads</div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Núcleo Norte</span><span class="sq-cuits">24</span><span class="sq-fact">$9,0 M</span></div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Sur</span><span class="sq-cuits">11</span><span class="sq-fact">$9,2 M</span></div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Núcleo Sur</span><span class="sq-cuits">14</span><span class="sq-fact">$7,1 M</span></div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Oeste</span><span class="sq-cuits">13</span><span class="sq-fact">$6,5 M</span></div>
+          </div>
+          <div class="bu-block centro">
+            <div class="bu-h"><b>CENTRO</b><span class="bu-tag">Business Unit</span></div>
+            <div class="bu-kpis">
+              <div class="bu-kpi"><div class="k-num">38</div><div class="k-lbl">CUITs</div></div>
+              <div class="bu-kpi"><div class="k-num">3</div><div class="k-lbl">Squads</div></div>
+              <div class="bu-kpi"><div class="k-num">$24,0 M</div><div class="k-lbl">Facturación</div></div>
+              <div class="bu-kpi"><div class="k-num">$492 K</div><div class="k-lbl">Comisión</div></div>
+            </div>
+            <div class="an-head">Squads</div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Córdoba Este</span><span class="sq-cuits">18</span><span class="sq-fact">$13,2 M</span></div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Río IV &amp; S. Luis</span><span class="sq-cuits">6</span><span class="sq-fact">$6,4 M</span></div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Centro</span><span class="sq-cuits">14</span><span class="sq-fact">$4,5 M</span></div>
+          </div>
+          <div class="bu-block norte">
+            <div class="bu-h"><b>NORTE</b><span class="bu-tag">Business Unit</span></div>
+            <div class="bu-kpis">
+              <div class="bu-kpi"><div class="k-num">11</div><div class="k-lbl">CUITs</div></div>
+              <div class="bu-kpi"><div class="k-num">3</div><div class="k-lbl">Squads</div></div>
+              <div class="bu-kpi"><div class="k-num">$10,3 M</div><div class="k-lbl">Facturación</div></div>
+              <div class="bu-kpi"><div class="k-num">$183 K</div><div class="k-lbl">Comisión</div></div>
+            </div>
+            <div class="an-head">Squads</div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>NEA</span><span class="sq-cuits">5</span><span class="sq-fact">$3,6 M</span></div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>Este</span><span class="sq-cuits">4</span><span class="sq-fact">$3,5 M</span></div>
+            <div class="sq-line"><span class="sq-name"><span class="dot"></span>NOA</span><span class="sq-cuits">2</span><span class="sq-fact">$3,2 M</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Distribución por BU</span></div>
+    </section>
+
+    <!-- SLIDE 8 · PLAN DE ACCIÓN -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Plan de acción · Próximos pasos</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body">
+        <div class="timeline">
+          <div class="tstep done"><div class="tdot">1</div><span class="tphase">Realizado</span><b>Relevamiento y consolidación</b><span>Excel por Squad de cada RV, consolidado en una única base de 111 CUITs.</span></div>
+          <div class="tstep"><div class="tdot">2</div><span class="tphase">En curso</span><b>Kick Off P&amp;C y GTM</b><span>Tomar definiciones por negocio y por GTM sobre cada categoría.</span></div>
+          <div class="tstep"><div class="tdot">3</div><span class="tphase">Próximo</span><b>Co-Construcción Coaches</b><span>Co construir con la comunidad de coaches la definición de tratamiento de las cuentas.</span></div>
+          <div class="tstep"><div class="tdot">4</div><span class="tphase">Próximo</span><b>Regularizar las cuentas</b><span>Recategorización en SAP/SF y gestión de comunicación al distribuidor.</span></div>
+          <div class="tstep"><div class="tdot">5</div><span class="tphase">Pendiente</span><b>Ejecutar acciones</b><span>Realizar los cambios definidos para regularizar el tratamiento de cuentas.</span></div>
+        </div>
+        <div class="pending"><b>Definición pendiente:</b> la categoría de <b>siembra asociada</b> (21 casos) requiere acuerdo entre P&amp;C y GTM para determinar su encuadre y el impacto en comisiones y bonos.</div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Plan de acción</span></div>
+    </section>
+
+    <!-- SLIDE 9 · MATRIZ DE DEFINICIONES (editable) -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="seclabel">Matriz de definiciones por concepto</div>
+        <div class="bayer">AGRO<br>BAYER</div>
+      </div>
+      <div class="s-body" style="justify-content:flex-start;">
+        <p style="font-size:12px;color:var(--txt-dim);margin-bottom:8px;line-height:1.5;flex:none;">Marcá con <b style="color:var(--lime-bright)">✓</b> o <b style="color:#ff8585">✗</b> en cada cruce para definir qué aplica a cada concepto. Hacé clic en el recuadro para alternar entre <b style="color:var(--txt)">vacío → ✓ → ✗</b>, y sumá comentarios en cada celda. Usá <b style="color:var(--lime-bright)">+ Agregar ítem</b> para incorporar nuevas filas.</p>
+        <div class="defwrap">
+          <table class="deftable">
+            <thead>
+              <tr>
+                <th class="col-item"><input class="head-input item-label" type="text" value="Punto a definir"></th>
+                <th class="def-sp"><input class="head-input" type="text" value="Siembra propia"><input class="head-input head-sub" type="text" value="Mismo CUIT y RS"></th>
+                <th class="def-ca"><input class="head-input" type="text" value="Cuenta asociada"><input class="head-input head-sub" type="text" value="Otra razón social"></th>
+                <th class="def-sa"><input class="head-input" type="text" value="Siembra asociada"><input class="head-input head-sub" type="text" value="Sociedad con socios"></th>
+              </tr>
+            </thead>
+            <tbody id="def-tbody"></tbody>
+          </table>
+        </div>
+        <div class="def-toolbar">
+          <button class="add-row-btn" type="button" id="add-row"><span class="plus">+</span> Agregar ítem</button>
+          <div class="def-legend">
+            <span><i class="ck">✓</i> Aplica / definido</span>
+            <span><i class="cr">✗</i> No aplica</span>
+            <span><i style="border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--txt-dim)">·</i> Sin definir</span>
+          </div>
+        </div>
+      </div>
+      <div class="s-foot"><span class="ftitle">Proyecto Siembras Propias</span><span>Matriz de definiciones</span></div>
+    </section>
+
+  </div>
+</div>
+
+<div class="counter"><b id="cur">1</b> / <span id="tot">9</span></div>
+<div class="nav">
+  <button id="prev" aria-label="Anterior">‹</button>
+  <div class="dots" id="dots"></div>
+  <button id="next" aria-label="Siguiente">›</button>
+</div>
+<div class="hint">← → · Espacio · F pantalla completa</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let idx = 0;
+  const stage = document.getElementById('stage');
+  const curEl = document.getElementById('cur');
+  const totEl = document.getElementById('tot');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  const dotsWrap = document.getElementById('dots');
+  totEl.textContent = total;
+
+  function fit(){
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'scale(' + scale + ')';
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('i');
+    d.addEventListener('click', () => go(i));
+    dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function go(n){
+    idx = Math.max(0, Math.min(total - 1, n));
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    dots.forEach((d, i) => d.classList.toggle('on', i === idx));
+    curEl.textContent = idx + 1;
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === total - 1;
+  }
+  function next(){ go(idx + 1); }
+  function prev(){ go(idx - 1); }
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    if(typing){ return; }
+    if(e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){ e.preventDefault(); next(); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key === 'Home'){ go(0); }
+    else if(e.key === 'End'){ go(total - 1); }
+    else if(e.key === 'f' || e.key === 'F'){
+      if(!document.fullscreenElement){ document.documentElement.requestFullscreen(); }
+      else { document.exitFullscreen(); }
+    }
+  });
+  go(0);
+})();
+
+// ----- Matriz de definiciones (editable) -----
+(function(){
+  var defRows = [
+    'Bono','Comisiones','Cultivar','Viajes','Premium',
+    'Exclusividad','Reward','Condiciones campaña','Puntos impulso'
+  ];
+  var tbody = document.getElementById('def-tbody');
+  if(!tbody){ return; }
+
+  function makeCell(){
+    var td = document.createElement('td');
+    td.className = 'cell';
+    var inner = document.createElement('div');
+    inner.className = 'cell-inner';
+    var btn = document.createElement('div');
+    btn.className = 'mark-btn';
+    btn.textContent = '·';
+    btn.title = 'Clic para marcar ✓ / ✗';
+    btn.addEventListener('click', function(){
+      if(btn.classList.contains('check')){
+        btn.classList.remove('check'); btn.classList.add('cross'); btn.textContent='✗';
+      } else if(btn.classList.contains('cross')){
+        btn.classList.remove('cross'); btn.textContent='·';
+      } else {
+        btn.classList.add('check'); btn.textContent='✓';
+      }
+    });
+    var ta = document.createElement('textarea');
+    ta.className = 'cell-comment';
+    ta.placeholder = 'Comentario…';
+    ta.rows = 1;
+    inner.appendChild(btn);
+    inner.appendChild(ta);
+    td.appendChild(inner);
+    return td;
+  }
+
+  function addRow(label){
+    var tr = document.createElement('tr');
+    var th = document.createElement('td');
+    th.className = 'row-item';
+    var wrap = document.createElement('div');
+    wrap.style.display = 'flex';
+    wrap.style.alignItems = 'center';
+    wrap.style.gap = '6px';
+    var input = document.createElement('input');
+    input.className = 'item-input';
+    input.type = 'text';
+    input.value = label || '';
+    input.placeholder = 'Nuevo ítem…';
+    var del = document.createElement('button');
+    del.className = 'row-del';
+    del.type = 'button';
+    del.textContent = '✕';
+    del.title = 'Eliminar fila';
+    del.addEventListener('click', function(){ tr.remove(); });
+    wrap.appendChild(input);
+    wrap.appendChild(del);
+    th.appendChild(wrap);
+    tr.appendChild(th);
+    for(var i=0;i<3;i++){ tr.appendChild(makeCell()); }
+    tbody.appendChild(tr);
+    if(!label){ input.focus(); }
+  }
+
+  defRows.forEach(function(r){ addRow(r); });
+  document.getElementById('add-row').addEventListener('click', function(){ addRow(''); });
+})();
+</script>
+</body>
+</html>
