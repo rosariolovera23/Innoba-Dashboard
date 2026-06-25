@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flujo de Trabajo · Contratos (editable)</title>
+<style>
+  :root{
+    --verde:#5BA33B;
+    --caja:#DCE6F1;
+    --caja-borde:#9DB3D0;
+    --caja-ini:#B7C4D6;
+    --hex:#FFF3CD;
+    --hex-borde:#E0C36A;
+    --rombo:#FFFFFF;
+    --rombo-borde:#9DB3D0;
+    --texto:#2b2b2b;
+    --gris:#7a7a7a;
+    --flecha:#8a8a8a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;color:var(--texto);background:#fff;}
+  .ribbon{background:var(--verde);color:#fff;padding:14px 26px;font-size:26px;font-weight:300;letter-spacing:.5px;}
+  .subtitulo{padding:16px 26px 4px;font-size:20px;font-weight:800;letter-spacing:1px;color:#333;border-bottom:2px solid #eee;text-transform:uppercase;outline:none;}
+  .toolbar{
+    position:sticky;top:0;z-index:50;display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    padding:12px 26px;background:#f6f8fa;border-bottom:1px solid #e3e8ee;
+  }
+  .toolbar button{
+    border:1px solid var(--caja-borde);background:#fff;color:#2b2b2b;
+    padding:8px 14px;border-radius:7px;font-size:13px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:.15s;
+  }
+  .toolbar button:hover{background:var(--caja);}
+  .toolbar button.activo{background:var(--verde);color:#fff;border-color:var(--verde);}
+  .toolbar .sep{flex:1;}
+  .toolbar .hint{font-size:12px;color:var(--gris);font-style:italic;}
+
+  .lienzo-wrap{padding:18px 26px 70px;}
+  #lienzo{
+    position:relative;width:100%;min-height:900px;background:
+      linear-gradient(#eef2f7 1px,transparent 1px),
+      linear-gradient(90deg,#eef2f7 1px,transparent 1px);
+    background-size:26px 26px;border:1px solid #e3e8ee;border-radius:8px;overflow:hidden;
+  }
+  svg.capa{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+
+  .nodo{
+    position:absolute;z-index:2;user-select:none;cursor:grab;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    box-shadow:0 2px 6px rgba(0,0,0,.12);
+  }
+  .nodo.arrastrando{cursor:grabbing;opacity:.92;}
+  .nodo .txt{outline:none;padding:8px;font-size:13px;line-height:1.3;width:100%;}
+  .nodo .owner{font-size:10.5px;color:#36506e;font-weight:600;margin-top:4px;display:block;}
+
+  /* Caja */
+  .nodo.box{width:180px;min-height:88px;background:var(--caja);border:1px solid var(--caja-borde);border-radius:3px;}
+  .nodo.box.inicio{background:var(--caja-ini);}
+  .nodo.box .txt .tit{font-weight:700;}
+
+  /* Rombo (decisión clásica) */
+  .nodo.diamond{width:150px;height:150px;background:transparent;box-shadow:none;}
+  .nodo.diamond .forma{
+    position:absolute;inset:0;background:var(--rombo);border:1px solid var(--rombo-borde);
+    transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,.12);
+  }
+  .nodo.diamond .txt{position:relative;z-index:1;font-weight:700;font-size:12px;}
+
+  /* Hexágono (toma de decisión) */
+  .nodo.hex{width:180px;height:104px;background:transparent;box-shadow:none;}
+  .nodo.hex .forma{
+    position:absolute;inset:0;background:var(--hex);border:1px solid var(--hex-borde);
+    clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+    box-shadow:0 2px 6px rgba(0,0,0,.12);
+  }
+  .nodo.hex .txt{position:relative;z-index:1;font-weight:700;font-size:12px;padding:8px 26px;}
+
+  .nodo.sel{outline:3px solid var(--verde);outline-offset:3px;}
+  .nodo.sel.diamond .forma,.nodo.sel.hex .forma{outline:3px solid var(--verde);outline-offset:3px;}
+
+  .nota{max-width:1100px;margin:10px auto 0;font-size:12px;color:var(--gris);}
+  @media print{
+    .toolbar{display:none;}
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    #lienzo{background:#fff;border:none;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="ribbon">Excel</div>
+  <div class="subtitulo" contenteditable="true">Plantilla de flujo de trabajo · Contratos</div>
+
+  <div class="toolbar">
+    <button onclick="addNodo('box')">➕ Caja</button>
+    <button onclick="addNodo('hex')">⬡ Hexágono (decisión)</button>
+    <button onclick="addNodo('diamond')">◆ Rombo</button>
+    <button id="btnConectar" onclick="toggleConectar()">🔗 Conectar</button>
+    <button onclick="delSel()">🗑 Borrar</button>
+    <button onclick="window.print()">🖨 Imprimir / PDF</button>
+    <button onclick="guardar()">💾 Guardar HTML</button>
+    <span class="sep"></span>
+    <span class="hint">Arrastrá para mover · Doble clic para editar texto · “Conectar” y clic en dos nodos para unirlos con flecha.</span>
+  </div>
+
+  <div class="lienzo-wrap">
+    <div id="lienzo">
+      <svg class="capa" id="capa">
+        <defs>
+          <marker id="punta" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#8a8a8a"></path>
+          </marker>
+        </defs>
+      </svg>
+      <!-- nodos generados por script -->
+    </div>
+  </div>
+
+  <p class="nota">🟦 Caja = tarea/etapa &nbsp;·&nbsp; ⬡ Hexágono = toma de decisión &nbsp;·&nbsp; ◇ Rombo = decisión &nbsp;·&nbsp; Las flechas marcan secuencia y dependencias. Todo es editable y se puede mover; usá “Guardar HTML” para descargar tu versión.</p>
+
+<script>
+  const lienzo = document.getElementById('lienzo');
+  const capa = document.getElementById('capa');
+  let nodos = [];          // {id, el}
+  let conexiones = [];      // {from, to}
+  let sel = null;
+  let nextId = 1;
+  let modoConectar = false;
+  let conectarOrigen = null;
+
+  // ---- Datos iniciales (flujo Contratos) ----
+  const inicial = {
+    nodos:[
+      {id:'n1', tipo:'box', cls:'inicio', x:30,  y:30,  tit:'Comienza el proceso de contratos', owner:'GTM'},
+      {id:'n2', tipo:'box', x:280, y:30,  tit:'Pedido de documentación (mail automático a firmantes)', owner:'GTM'},
+      {id:'n3', tipo:'box', x:530, y:30,  tit:'Recepción de documentación', owner:'Habilitaciones, CASAFE, DNI, estatuto, ARCA'},
+      {id:'n4', tipo:'diamond', x:800, y:14, tit:'¿Envió toda la documentación?', owner:undefined},
+      {id:'n12',tipo:'box', x:560, y:210, tit:'Volver a pedir la documentación faltante', owner:'GTM'},
+      {id:'n11',tipo:'box', x:810, y:210, tit:'Revisión del bot (valida la documentación)', owner:'Bot'},
+      {id:'n5', tipo:'box', x:280, y:380, tit:'Preparación de contratos (plantilla + merge: razón social y socios)', owner:'GTM'},
+      {id:'n6', tipo:'box', x:530, y:380, tit:'Contratos preparados', owner:'Innoba / Selecta'},
+      {id:'n13',tipo:'diamond', x:790, y:360, tit:'¿Contrato terminado?', owner:undefined},
+      {id:'n14',tipo:'box', x:790, y:560, tit:'Esperar documentación y luego enviar contrato', owner:'GTM'},
+      {id:'n7', tipo:'box', x:530, y:560, tit:'Enviar por DocuSign → Luis (GTM)', owner:'GTM'},
+      {id:'n8', tipo:'box', x:280, y:560, tit:'Firma del contrato por el distribuidor', owner:'Firmante distribuidor'},
+      {id:'n9', tipo:'diamond', x:285, y:732, tit:'¿Contrato firmado por el distribuidor?', owner:undefined},
+      {id:'n10',tipo:'box', cls:'inicio', x:545, y:740, tit:'FIN · Copia al RV', owner:'RV'},
+      {id:'n15',tipo:'box', x:40,  y:740, tit:'Enviar recordatorio de firma', owner:'GTM'}
+    ],
+    conexiones:[
+      {from:'n1',to:'n2'},{from:'n2',to:'n3'},{from:'n3',to:'n4'},
+      {from:'n4',to:'n11',label:'Sí'},{from:'n11',to:'n5'},
+      {from:'n4',to:'n12',label:'No'},{from:'n12',to:'n2',label:'reclamo doc.'},
+      {from:'n5',to:'n6'},{from:'n6',to:'n13'},
+      {from:'n13',to:'n7',label:'Sí'},
+      {from:'n13',to:'n14',label:'No'},{from:'n14',to:'n7',label:'luego enviar'},
+      {from:'n7',to:'n8'},{from:'n8',to:'n9'},
+      {from:'n9',to:'n10',label:'Sí'},
+      {from:'n9',to:'n15',label:'No'},{from:'n15',to:'n8',label:'recordatorio'}
+    ]
+  };
+
+  function crearNodo({id,tipo,cls,x,y,tit,owner}){
+    const el = document.createElement('div');
+    el.className = 'nodo ' + tipo + (cls ? ' '+cls : '');
+    el.dataset.id = id;
+    el.style.left = x+'px';
+    el.style.top = y+'px';
+    let inner = '';
+    if(tipo==='diamond' || tipo==='hex') inner += '<div class="forma"></div>';
+    inner += '<div class="txt"><span class="tit" contenteditable="false">'+tit+'</span>'+
+             (owner!==undefined ? '<span class="owner" contenteditable="false">'+(owner?('Owner: '+owner):'')+'</span>' : '')+
+             '</div>';
+    el.innerHTML = inner;
+    lienzo.appendChild(el);
+    nodos.push({id, el});
+    const n = parseInt(id.replace(/\D/g,''));
+    if(!isNaN(n) && n >= nextId) nextId = n+1;
+    return el;
+  }
+
+  function init(){
+    inicial.nodos.forEach(crearNodo);
+    inicial.conexiones.forEach(c => conexiones.push(c));
+    renderArrows();
+  }
+
+  // ---- Geometría / flechas ----
+  function centro(el){
+    return {x: el.offsetLeft + el.offsetWidth/2, y: el.offsetTop + el.offsetHeight/2,
+            w: el.offsetWidth, h: el.offsetHeight};
+  }
+  function borde(el, tx, ty){
+    const c = centro(el);
+    const dx = tx - c.x, dy = ty - c.y;
+    if(dx===0 && dy===0) return {x:c.x, y:c.y};
+    const sx = dx!==0 ? (c.w/2)/Math.abs(dx) : Infinity;
+    const sy = dy!==0 ? (c.h/2)/Math.abs(dy) : Infinity;
+    const s = Math.min(sx, sy);
+    return {x: c.x + dx*s, y: c.y + dy*s};
+  }
+  function getEl(id){ const n = nodos.find(n=>n.id===id); return n ? n.el : null; }
+
+  function renderArrows(){
+    // limpiar paths previos
+    capa.querySelectorAll('path.conn, text.conn-lbl, rect.conn-lbl-bg').forEach(p=>p.remove());
+    conexiones.forEach(con=>{
+      const a = getEl(con.from), b = getEl(con.to);
+      if(!a || !b) return;
+      const ca = centro(a), cb = centro(b);
+      const p1 = borde(a, cb.x, cb.y);
+      const p2 = borde(b, ca.x, ca.y);
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('class','conn');
+      path.setAttribute('d', `M${p1.x},${p1.y} L${p2.x},${p2.y}`);
+      path.setAttribute('stroke','#8a8a8a');
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('fill','none');
+      path.setAttribute('marker-end','url(#punta)');
+      path.dataset.from = con.from;
+      path.dataset.to = con.to;
+      capa.appendChild(path);
+
+      // etiqueta sobre la flecha (Sí / No / reclamo, etc.)
+      if(con.label){
+        const mx = (p1.x + p2.x)/2, my = (p1.y + p2.y)/2;
+        const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        const wlbl = con.label.length*7 + 10;
+        bg.setAttribute('class','conn-lbl-bg');
+        bg.setAttribute('x', mx - wlbl/2); bg.setAttribute('y', my - 11);
+        bg.setAttribute('width', wlbl); bg.setAttribute('height', 18);
+        bg.setAttribute('rx', 4); bg.setAttribute('fill','#fff');
+        bg.setAttribute('stroke','#d4dae2');
+        capa.appendChild(bg);
+        const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+        txt.setAttribute('class','conn-lbl');
+        txt.setAttribute('x', mx); txt.setAttribute('y', my + 3);
+        txt.setAttribute('text-anchor','middle');
+        txt.setAttribute('font-size','12');
+        txt.setAttribute('font-weight','700');
+        txt.setAttribute('fill','#4a6280');
+        txt.textContent = con.label;
+        capa.appendChild(txt);
+      }
+    });
+  }
+
+  // ---- Selección / arrastre ----
+  let drag = null;
+  lienzo.addEventListener('mousedown', e=>{
+    const nodo = e.target.closest('.nodo');
+    if(e.target.isContentEditable) return;
+    if(!nodo) return;
+
+    if(modoConectar){
+      manejarConexion(nodo);
+      return;
+    }
+    seleccionar(nodo);
+    const rect = lienzo.getBoundingClientRect();
+    drag = {
+      el: nodo,
+      offX: e.clientX - rect.left - nodo.offsetLeft,
+      offY: e.clientY - rect.top - nodo.offsetTop
+    };
+    nodo.classList.add('arrastrando');
+  });
+  document.addEventListener('mousemove', e=>{
+    if(!drag) return;
+    const rect = lienzo.getBoundingClientRect();
+    let x = e.clientX - rect.left - drag.offX;
+    let y = e.clientY - rect.top - drag.offY;
+    x = Math.max(0, x); y = Math.max(0, y);
+    drag.el.style.left = x+'px';
+    drag.el.style.top = y+'px';
+    renderArrows();
+  });
+  document.addEventListener('mouseup', ()=>{
+    if(drag){ drag.el.classList.remove('arrastrando'); drag=null; renderArrows(); }
+  });
+
+  function seleccionar(nodo){
+    if(sel) sel.classList.remove('sel');
+    sel = nodo; sel.classList.add('sel');
+  }
+
+  // ---- Editar texto (doble clic) ----
+  lienzo.addEventListener('dblclick', e=>{
+    const t = e.target.closest('.tit, .owner, .txt');
+    if(!t) return;
+    const editable = t.classList.contains('txt') ? t.querySelector('.tit') : t;
+    editable.setAttribute('contenteditable','true');
+    editable.focus();
+    const r = document.createRange(); r.selectNodeContents(editable);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  });
+  lienzo.addEventListener('blur', e=>{
+    if(e.target.classList && (e.target.classList.contains('tit')||e.target.classList.contains('owner')))
+      e.target.setAttribute('contenteditable','false');
+  }, true);
+
+  // ---- Conectar ----
+  function toggleConectar(){
+    modoConectar = !modoConectar;
+    conectarOrigen = null;
+    document.getElementById('btnConectar').classList.toggle('activo', modoConectar);
+    lienzo.style.cursor = modoConectar ? 'crosshair' : '';
+  }
+  function manejarConexion(nodo){
+    if(!conectarOrigen){
+      conectarOrigen = nodo; nodo.classList.add('sel');
+    } else if(conectarOrigen === nodo){
+      conectarOrigen.classList.remove('sel'); conectarOrigen = null;
+    } else {
+      conexiones.push({from: conectarOrigen.dataset.id, to: nodo.dataset.id});
+      conectarOrigen.classList.remove('sel');
+      conectarOrigen = null;
+      renderArrows();
+    }
+  }
+
+  // ---- Agregar / borrar ----
+  function addNodo(tipo){
+    const id = 'n'+(nextId++);
+    const defaults = {
+      box:{tit:'Nueva tarea', owner:''},
+      hex:{tit:'¿Decisión?', owner:undefined},
+      diamond:{tit:'¿Decisión?', owner:undefined}
+    };
+    const el = crearNodo({id, tipo, x:40, y:40, tit:defaults[tipo].tit, owner:defaults[tipo].owner});
+    seleccionar(el);
+  }
+  function delSel(){
+    if(!sel){ alert('Primero seleccioná un nodo (un clic encima).'); return; }
+    const id = sel.dataset.id;
+    conexiones = conexiones.filter(c=>c.from!==id && c.to!==id);
+    nodos = nodos.filter(n=>n.id!==id);
+    sel.remove(); sel=null;
+    renderArrows();
+  }
+
+  // ---- Guardar ----
+  function guardar(){
+    if(sel) sel.classList.remove('sel');
+    // serializar conexiones como atributos data en un contenedor oculto para re-cargar
+    let store = document.getElementById('conn-store');
+    if(!store){ store = document.createElement('script'); store.id='conn-store'; store.type='application/json'; lienzo.appendChild(store); }
+    store.textContent = JSON.stringify(conexiones);
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([html], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Flujo_Contratos_editado.html';
+    a.click();
+    if(sel) sel.classList.add('sel');
+  }
+
+  // ---- Re-cargar desde archivo guardado ----
+  function cargarSiGuardado(){
+    const existentes = lienzo.querySelectorAll('.nodo');
+    if(existentes.length === 0){ init(); return; }
+    // reconstruir nodos[] desde DOM
+    existentes.forEach(el=>{
+      const id = el.dataset.id;
+      nodos.push({id, el});
+      const n = parseInt(id.replace(/\D/g,''));
+      if(!isNaN(n) && n>=nextId) nextId=n+1;
+    });
+    const store = document.getElementById('conn-store');
+    if(store){ try{ conexiones = JSON.parse(store.textContent)||[]; }catch(e){} }
+    renderArrows();
+  }
+
+  cargarSiGuardado();
+  window.addEventListener('resize', renderArrows);
+</script>
+</body>
+</html>
