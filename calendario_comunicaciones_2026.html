@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendario Anual de Comunicaciones 2026</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --text: #1f2a37;
+      --muted: #5f6c7b;
+      --line: #dbe2ea;
+      --accent: #0f766e;
+      --accent-soft: #d7f3ef;
+      --today-ring: #f59e0b;
+
+      --area-marketing: #1d4ed8;
+      --area-comercial: #059669;
+      --area-operaciones: #7c3aed;
+      --area-soporte: #ea580c;
+      --area-finanzas: #b91c1c;
+      --area-rrhh: #0f766e;
+
+      --platform-salesforce: #2b6cb0;
+      --platform-sap: #0ea5e9;
+      --platform-whatsapp: #16a34a;
+      --platform-email: #7c3aed;
+      --platform-portal: #0369a1;
+      --platform-teamszoom: #2563eb;
+      --platform-presencial: #9a3412;
+
+      --priority-critico: #dc2626;
+      --priority-importante: #f59e0b;
+      --priority-estandar: #2563eb;
+      --priority-informativo: #64748b;
+
+      --status-programado: #2563eb;
+      --status-encurso: #0f766e;
+      --status-completado: #16a34a;
+      --status-reprogramado: #d97706;
+      --status-cancelado: #b91c1c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Calibri", "Trebuchet MS", sans-serif;
+      background: radial-gradient(circle at 15% 10%, #e8eef7 0%, #f4f6f8 38%, #eef3f6 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      width: min(1320px, 96vw);
+      margin: 22px auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 18px 38px rgba(20, 31, 44, 0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 22px;
+      background: linear-gradient(105deg, #073b4c, #0f766e 52%, #125e57);
+      color: #fff;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 2vw, 1.65rem);
+      letter-spacing: 0.2px;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.94rem;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 14px 18px 0;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .tab {
+      appearance: none;
+      border: 1px solid transparent;
+      border-bottom: none;
+      background: #eef2f6;
+      color: #243447;
+      border-radius: 10px 10px 0 0;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .tab.active {
+      background: #fff;
+      border-color: var(--line);
+      color: var(--accent);
+      transform: translateY(1px);
+    }
+
+    .panel {
+      display: none;
+      padding: 18px;
+      animation: fadeIn 220ms ease;
+    }
+
+    .panel.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .month-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .monthly-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .monthly-side-legend {
+      position: sticky;
+      top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .monthly-side-legend .legend-card {
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    .monthly-side-legend .legend-card h3 {
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+    }
+
+    .monthly-side-legend .legend-item {
+      font-size: 0.84rem;
+    }
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #0f172a;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .month-title {
+      margin: 0;
+      font-size: clamp(1rem, 1.8vw, 1.3rem);
+      min-width: 220px;
+      text-align: center;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .weekday-row,
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .weekday-row {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-bottom: none;
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
+    }
+
+    .weekday {
+      padding: 10px;
+      text-align: center;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #334155;
+      border-right: 1px solid var(--line);
+    }
+
+    .weekday:last-child { border-right: none; }
+
+    .calendar-weeks {
+      border: 1px solid var(--line);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .week-row {
+      position: relative;
+      border-top: 1px solid var(--line);
+      min-height: 122px;
+      background: #fff;
+    }
+
+    .week-row:first-child { border-top: none; }
+
+    .day-cell {
+      min-height: 122px;
+      border-right: 1px solid var(--line);
+      padding: 8px 8px 8px;
+      position: relative;
+      background: #fff;
+    }
+
+    .day-cell:last-child { border-right: none; }
+
+    .day-cell.other-month {
+      background: #f8fafc;
+      color: #94a3b8;
+    }
+
+    .day-number {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1e293b;
+      display: inline-flex;
+      min-width: 28px;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+    }
+
+    .day-cell.other-month .day-number { color: #94a3b8; }
+
+    .day-cell.today .day-number {
+      background: var(--today-ring);
+      color: #fff;
+      box-shadow: 0 0 0 2px #ffedd5;
+    }
+
+    .events-layer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 30px;
+      bottom: 6px;
+      pointer-events: none;
+    }
+
+    .event-bar {
+      position: absolute;
+      height: 22px;
+      border-radius: 8px;
+      padding: 2px 8px;
+      color: #fff;
+      font-size: 0.74rem;
+      line-height: 18px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+      pointer-events: auto;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+    }
+
+    .event-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      border: 1px solid rgba(255, 255, 255, 0.65);
+    }
+
+    .event-label {
+      vertical-align: middle;
+      font-weight: 600;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 10px;
+      margin: 6px 0 14px;
+    }
+
+    .filters label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    select {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      background: #fff;
+      color: #0f172a;
+      min-height: 36px;
+    }
+
+    .counter {
+      margin: 0 0 8px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1120px;
+      font-size: 0.87rem;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #e7edf4;
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      color: #0f172a;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.15px;
+    }
+
+    th .sort-indicator {
+      margin-left: 6px;
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    tr:hover td {
+      background: #f9fbff;
+    }
+
+    .area-chip,
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .platform-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 8px;
+      padding: 3px 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.1px;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .legend-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .legend-card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    .legend-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #334155;
+      font-size: 0.9rem;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      flex: 0 0 auto;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+    }
+
+    .status-badge {
+      color: #fff;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.52);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-card {
+      width: min(640px, 100%);
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
+      overflow: hidden;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #0f172a;
+    }
+
+    .close-btn {
+      border: 0;
+      background: transparent;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      color: #475569;
+    }
+
+    .modal-body {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+      gap: 10px 14px;
+      font-size: 0.92rem;
+    }
+
+    .field {
+      color: #334155;
+    }
+
+    .field strong {
+      color: #0f172a;
+      display: inline-block;
+      min-width: 96px;
+    }
+
+    .field.description {
+      grid-column: 1 / -1;
+      background: #f8fafc;
+      border: 1px solid #e5edf5;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .combo-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 6, 23, 0.42);
+      z-index: 120;
+      backdrop-filter: blur(1px);
+    }
+
+    .loading-overlay.open { display: flex; }
+
+    .loading-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .data-lab {
+      display: block;
+      margin: 0;
+      padding: 14px;
+      border: 1px dashed #94a3b8;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .data-lab-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .data-lab h3 {
+      margin: 0;
+      color: #0f172a;
+      font-size: 1rem;
+    }
+
+    .data-lab p {
+      margin: 0;
+      color: #334155;
+      font-size: 0.86rem;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .data-grid label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .data-grid input,
+    .data-grid textarea,
+    .data-grid select {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px;
+      min-height: 36px;
+      background: #fff;
+      font-family: inherit;
+      color: #0f172a;
+    }
+
+    .data-grid textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    .data-grid .span-3 { grid-column: span 3; }
+    .data-grid .span-2 { grid-column: span 2; }
+
+    .data-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .data-btn {
+      border: 1px solid #94a3b8;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .data-btn.primary {
+      background: #0f766e;
+      border-color: #0f766e;
+      color: #fff;
+    }
+
+    .data-note {
+      margin-top: 8px;
+      color: #334155;
+      font-size: 0.83rem;
+    }
+
+    @media (max-width: 980px) {
+      .filters { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .legend-grid { grid-template-columns: 1fr; }
+      .monthly-layout { grid-template-columns: 1fr; }
+      .monthly-side-legend {
+        position: static;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+      }
+      .data-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .data-grid .span-3 { grid-column: span 2; }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        width: 100vw;
+        margin: 0;
+        border-radius: 0;
+        min-height: 100vh;
+      }
+
+      .panel { padding: 12px; }
+      .day-cell { min-height: 108px; }
+      .event-bar { font-size: 0.68rem; }
+      .modal-body { grid-template-columns: 1fr; }
+      .month-title { min-width: 170px; }
+      .monthly-side-legend { grid-template-columns: 1fr; }
+      .data-grid { grid-template-columns: 1fr; }
+      .data-grid .span-3,
+      .data-grid .span-2 { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div>
+        <h1>Calendario Anual de Comunicaciones 2026</h1>
+        <p>Red de distribuidores • Plan de comunicación comercial, operativa y de soporte</p>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Navegación de pestañas">
+      <button class="tab active" data-tab="mensual">1. Calendario Mensual</button>
+      <button class="tab" data-tab="general">2. Vista General</button>
+      <button class="tab" data-tab="leyenda">3. Leyenda</button>
+      <button class="tab" data-tab="carga">4. Carga / Test</button>
+    </nav>
+
+    <section class="panel active" id="panel-mensual">
+      <div class="monthly-layout">
+        <div class="monthly-main">
+          <div class="month-toolbar">
+            <div class="month-nav">
+              <button id="prevMonth" class="icon-btn" aria-label="Mes anterior">◀</button>
+              <h2 id="monthTitle" class="month-title"></h2>
+              <button id="nextMonth" class="icon-btn" aria-label="Mes siguiente">▶</button>
+            </div>
+            <div class="meta" id="monthMeta"></div>
+          </div>
+
+          <div class="weekday-row" id="weekdayRow"></div>
+          <div class="calendar-weeks" id="calendarWeeks"></div>
+        </div>
+
+        <aside class="monthly-side-legend" aria-label="Aclaraciones de colores y clasificaciones">
+          <article class="legend-card">
+            <h3>Prioridad</h3>
+            <div class="legend-list" id="legendPrioridadesSide"></div>
+          </article>
+          <article class="legend-card">
+            <h3>Estado (color del bloque)</h3>
+            <div class="legend-list" id="legendEstadosSide"></div>
+          </article>
+        </aside>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-general">
+      <div class="filters">
+        <label>Mes
+          <select id="filterMes"></select>
+        </label>
+        <label>Distribuidor
+          <select id="filterDistribuidor"></select>
+        </label>
+        <label>Área
+          <select id="filterArea"></select>
+        </label>
+        <label>Plataforma
+          <select id="filterPlataforma"></select>
+        </label>
+        <label>Prioridad
+          <select id="filterPrioridad"></select>
+        </label>
+        <label>Estado
+          <select id="filterEstado"></select>
+        </label>
+      </div>
+      <p class="counter" id="counterEventos"></p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr id="tableHead"></tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-leyenda">
+      <div class="legend-grid">
+        <article class="legend-card">
+          <h3>Colores por Área Responsable</h3>
+          <div class="legend-list" id="legendAreas"></div>
+        </article>
+
+        <article class="legend-card">
+          <h3>Plataformas</h3>
+          <div class="legend-list" id="legendPlataformas"></div>
+        </article>
+
+        <article class="legend-card">
+          <h3>Prioridad</h3>
+          <div class="legend-list" id="legendPrioridades"></div>
+        </article>
+
+        <article class="legend-card">
+          <h3>Estado de Ejecución</h3>
+          <div class="legend-list" id="legendEstados"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-carga" aria-label="Zona de carga para testing">
+      <div class="data-lab" id="dataLab">
+        <div class="data-lab-head">
+          <div>
+            <h3>Modo Carga (Test)</h3>
+            <p>Panel de pruebas para cargar eventos manuales o masivos por JSON</p>
+          </div>
+        </div>
+
+        <form id="eventForm" class="data-grid">
+          <label>Fecha inicio
+            <input type="date" id="formInicio" required />
+          </label>
+          <label>Fecha fin
+            <input type="date" id="formFin" required />
+          </label>
+          <label>Distribuidor
+            <select id="formDistribuidor" required></select>
+          </label>
+          <label class="span-3">Nombre de la acción
+            <input type="text" id="formAccion" maxlength="120" required />
+          </label>
+          <label>Área responsable
+            <select id="formArea" required></select>
+          </label>
+          <label>Plataforma
+            <select id="formPlataforma" required></select>
+          </label>
+          <label>Responsable
+            <input type="text" id="formResponsable" maxlength="80" required />
+          </label>
+          <label>Prioridad
+            <select id="formPrioridad" required></select>
+          </label>
+          <label>Estado
+            <select id="formEstado" required></select>
+          </label>
+          <label class="span-3">Descripción
+            <textarea id="formDescripcion" maxlength="400" required></textarea>
+          </label>
+        </form>
+
+        <div class="data-actions">
+          <button type="button" class="data-btn primary" id="addEventBtn">Agregar evento</button>
+          <button type="button" class="data-btn" id="resetEventFormBtn">Limpiar formulario</button>
+        </div>
+
+        <label class="data-note" style="display:block; margin-top: 12px; font-weight: 700; color: #0f172a;">Carga masiva JSON (array de objetos con los mismos campos requeridos)</label>
+        <textarea id="bulkJsonInput" style="width: 100%; min-height: 120px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; font-family: Consolas, monospace;">[]</textarea>
+        <div class="data-actions">
+          <button type="button" class="data-btn primary" id="loadJsonBtn">Cargar JSON (test)</button>
+          <button type="button" class="data-btn" id="sampleJsonBtn">Insertar ejemplo</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div class="loading-card">Cargando eventos... calendario bloqueado</div>
+  </div>
+
+  <div class="modal" id="eventModal" aria-hidden="true" role="dialog" aria-modal="true">
+    <article class="modal-card">
+      <div class="modal-head">
+        <h2 id="modalTitle"></h2>
+        <button class="close-btn" id="closeModal" aria-label="Cerrar">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </article>
+  </div>
+
+  <script>
+    const CALENDAR_YEAR = 2026;
+    const ALL_DISTRIBUTORS_LABEL = "Todos los distribuidores";
+    const CARGA_TAB_PIN = "1234";
+    const monthNames = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    const weekdayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+    const distributorNames = Array.from({ length: 82 }, (_, i) => `Distribuidor ${i + 1}`);
+
+    const areaColors = {
+      "Marketing": "var(--area-marketing)",
+      "Comercial": "var(--area-comercial)",
+      "Operaciones": "var(--area-operaciones)",
+      "Soporte": "var(--area-soporte)",
+      "Finanzas": "var(--area-finanzas)",
+      "RRHH": "var(--area-rrhh)"
+    };
+
+    const platformColors = {
+      "Salesforce": "var(--platform-salesforce)",
+      "SAP": "var(--platform-sap)",
+      "WhatsApp": "var(--platform-whatsapp)",
+      "Email": "var(--platform-email)",
+      "Portal": "var(--platform-portal)",
+      "Teams / Zoom": "var(--platform-teamszoom)",
+      "Presencial": "var(--platform-presencial)"
+    };
+
+    const priorityColors = {
+      "Crítico": "var(--priority-critico)",
+      "Importante": "var(--priority-importante)",
+      "Estándar": "var(--priority-estandar)",
+      "Informativo": "var(--priority-informativo)"
+    };
+
+    const statusColors = {
+      "Programado": "var(--status-programado)",
+      "En curso": "var(--status-encurso)",
+      "Completado": "var(--status-completado)",
+      "Reprogramado": "var(--status-reprogramado)",
+      "Cancelado": "var(--status-cancelado)"
+    };
+
+    let eventsData = [
+      { inicio: "2026-01-06", fin: "2026-01-08", accion: "Kickoff comercial anual", area: "Comercial", plataforma: "Teams / Zoom", responsable: "Laura Mendez", descripcion: "Presentacion de metas anuales, esquema de incentivos y territorios para la red de distribuidores.", prioridad: "Crítico", estado: "Completado" },
+      { inicio: "2026-01-13", fin: "2026-01-13", accion: "Boletin novedades de portafolio", area: "Marketing", plataforma: "Email", responsable: "Tomas Vera", descripcion: "Envio de resumen mensual con lanzamientos, piezas promocionales y mensajes clave para el canal.", prioridad: "Estándar", estado: "Completado" },
+      { inicio: "2026-01-19", fin: "2026-01-21", accion: "Capacitacion SAP pedidos", area: "Operaciones", plataforma: "SAP", responsable: "Sofia Quiroga", descripcion: "Entrenamiento para carga correcta de pedidos, validaciones y tratamiento de excepciones.", prioridad: "Importante", estado: "Completado" },
+      { inicio: "2026-01-27", fin: "2026-01-27", accion: "Mesa de consultas regional", area: "Soporte", plataforma: "WhatsApp", responsable: "Diego Ponce", descripcion: "Ronda abierta para consultas operativas de distribuidores con respuesta en tiempo real.", prioridad: "Informativo", estado: "Completado" },
+
+      { inicio: "2026-02-03", fin: "2026-02-04", accion: "Campana primer trimestre", area: "Marketing", plataforma: "Portal", responsable: "Camila Arias", descripcion: "Publicacion de toolkit con piezas de punto de venta y calendario de ejecucion para Q1.", prioridad: "Importante", estado: "Completado" },
+      { inicio: "2026-02-10", fin: "2026-02-10", accion: "Recordatorio cierre de creditos", area: "Finanzas", plataforma: "Email", responsable: "Javier Serrano", descripcion: "Comunicacion de fechas limite, documentacion y canales para gestion de creditos comerciales.", prioridad: "Crítico", estado: "Completado" },
+      { inicio: "2026-02-17", fin: "2026-02-19", accion: "Ronda de onboarding de distribuidores", area: "RRHH", plataforma: "Teams / Zoom", responsable: "Paula Neri", descripcion: "Induccion a nuevos equipos comerciales del canal con foco en herramientas y protocolos.", prioridad: "Estándar", estado: "Completado" },
+      { inicio: "2026-02-24", fin: "2026-02-24", accion: "Clinic Salesforce oportunidades", area: "Comercial", plataforma: "Salesforce", responsable: "Mariano Ruiz", descripcion: "Sesion guiada para mejorar calidad de pipeline y seguimiento de oportunidades.", prioridad: "Importante", estado: "Completado" },
+
+      { inicio: "2026-03-02", fin: "2026-03-03", accion: "Actualizacion politica de descuentos", area: "Finanzas", plataforma: "Portal", responsable: "Luciana Gomez", descripcion: "Difusion de nuevas bandas de descuentos y criterios de aprobacion por segmento.", prioridad: "Crítico", estado: "Completado" },
+      { inicio: "2026-03-09", fin: "2026-03-09", accion: "Newsletter casos de exito", area: "Marketing", plataforma: "Email", responsable: "Nicolas Acosta", descripcion: "Envio de casos de exito de distribuidores para replicar practicas en el canal.", prioridad: "Informativo", estado: "Completado" },
+      { inicio: "2026-03-16", fin: "2026-03-18", accion: "Mesa tecnica de postventa", area: "Soporte", plataforma: "Teams / Zoom", responsable: "Gonzalo Ledesma", descripcion: "Revision de incidencias recurrentes y acuerdos de respuesta con equipos regionales.", prioridad: "Importante", estado: "Completado" },
+      { inicio: "2026-03-25", fin: "2026-03-27", accion: "Roadshow zona centro", area: "Comercial", plataforma: "Presencial", responsable: "Veronica Sosa", descripcion: "Encuentros presenciales con distribuidores para alinear metas de cierre de trimestre.", prioridad: "Estándar", estado: "Completado" },
+
+      { inicio: "2026-04-07", fin: "2026-04-09", accion: "Campana lanzamiento de temporada", area: "Marketing", plataforma: "WhatsApp", responsable: "Natalia Ibarra", descripcion: "Activacion coordinada con piezas de venta rapida y mensajes adaptados por region.", prioridad: "Crítico", estado: "Completado" },
+      { inicio: "2026-04-14", fin: "2026-04-14", accion: "Comunicado de stock critico", area: "Operaciones", plataforma: "Portal", responsable: "Mauro Diaz", descripcion: "Alerta preventiva de disponibilidad limitada y alternativas de abastecimiento.", prioridad: "Importante", estado: "Completado" },
+      { inicio: "2026-04-20", fin: "2026-04-22", accion: "Entrenamiento de argumentario", area: "Comercial", plataforma: "Teams / Zoom", responsable: "Silvina Prat", descripcion: "Capacitacion para reforzar argumentacion de valor y manejo de objeciones.", prioridad: "Estándar", estado: "Completado" },
+      { inicio: "2026-04-29", fin: "2026-04-29", accion: "Pulse check clima del canal", area: "RRHH", plataforma: "Email", responsable: "Agustin Ferrer", descripcion: "Encuesta corta para evaluar clima y necesidades de acompanamiento en la red.", prioridad: "Informativo", estado: "Completado" },
+
+      { inicio: "2026-05-05", fin: "2026-05-06", accion: "Auditoria de datos maestros", area: "Operaciones", plataforma: "SAP", responsable: "Ines Molina", descripcion: "Revision de altas y modificaciones de distribuidores para evitar errores en facturacion.", prioridad: "Importante", estado: "Completado" },
+      { inicio: "2026-05-12", fin: "2026-05-12", accion: "Campana fidelizacion canal", area: "Marketing", plataforma: "Email", responsable: "Bruno Casas", descripcion: "Envio de beneficios por desempeno y novedades del programa de fidelizacion.", prioridad: "Estándar", estado: "Completado" },
+      { inicio: "2026-05-18", fin: "2026-05-20", accion: "Mesa de seguimiento financiero", area: "Finanzas", plataforma: "Teams / Zoom", responsable: "Claudia Rivas", descripcion: "Revision de cartera, limites de credito y compromisos de cobranza por region.", prioridad: "Crítico", estado: "Completado" },
+      { inicio: "2026-05-26", fin: "2026-05-26", accion: "Foro soporte de campo", area: "Soporte", plataforma: "WhatsApp", responsable: "Emanuel Funes", descripcion: "Canal de intercambio rapido para tecnicos y distribuidores con casos de instalacion.", prioridad: "Informativo", estado: "Completado" },
+
+      { inicio: "2026-06-02", fin: "2026-06-04", accion: "Semana de incentivos mid-year", area: "Comercial", plataforma: "Portal", responsable: "Paola Montes", descripcion: "Publicacion de metas semestrales, premios y reglas de elegibilidad del programa.", prioridad: "Crítico", estado: "En curso" },
+      { inicio: "2026-06-09", fin: "2026-06-09", accion: "Comunicacion de mantenimiento SAP", area: "Operaciones", plataforma: "SAP", responsable: "Raul Benitez", descripcion: "Aviso de ventana tecnica y recomendaciones para planificar pedidos.", prioridad: "Importante", estado: "Completado" },
+      { inicio: "2026-06-16", fin: "2026-06-18", accion: "Workshop de lideres regionales", area: "RRHH", plataforma: "Presencial", responsable: "Marina Lozano", descripcion: "Taller de liderazgo para jefes de distribucion y coordinadores de venta.", prioridad: "Estándar", estado: "Programado" },
+      { inicio: "2026-06-24", fin: "2026-06-24", accion: "Alerta de fraude y ciberseguridad", area: "Soporte", plataforma: "Email", responsable: "Fernando Quiroz", descripcion: "Buenas practicas para evitar suplantacion y ataques en canales digitales.", prioridad: "Importante", estado: "Programado" },
+
+      { inicio: "2026-07-01", fin: "2026-07-03", accion: "Kickoff segundo semestre", area: "Comercial", plataforma: "Teams / Zoom", responsable: "Lorena Cid", descripcion: "Alineacion de objetivos H2, foco de cuentas y esquema de acompanamiento.", prioridad: "Crítico", estado: "Programado" },
+      { inicio: "2026-07-08", fin: "2026-07-08", accion: "Boletin precios y margenes", area: "Finanzas", plataforma: "Portal", responsable: "Martin Ordoñez", descripcion: "Actualizacion de estructura de precios y margenes recomendados para distribuidores.", prioridad: "Importante", estado: "Programado" },
+      { inicio: "2026-07-14", fin: "2026-07-16", accion: "Campana de rotacion de inventario", area: "Marketing", plataforma: "WhatsApp", responsable: "Carla Boedo", descripcion: "Mensajes segmentados para acelerar salida de inventario de baja rotacion.", prioridad: "Estándar", estado: "Programado" },
+      { inicio: "2026-07-28", fin: "2026-07-28", accion: "Clinica de tickets complejos", area: "Soporte", plataforma: "Teams / Zoom", responsable: "Hector Taboada", descripcion: "Analisis de casos tecnicos de alta complejidad y tiempos de resolucion.", prioridad: "Informativo", estado: "Programado" },
+
+      { inicio: "2026-08-04", fin: "2026-08-05", accion: "Reforzamiento de canales digitales", area: "Marketing", plataforma: "Portal", responsable: "Julieta Flores", descripcion: "Material y guias para potenciar captacion digital de distribuidores.", prioridad: "Importante", estado: "Programado" },
+      { inicio: "2026-08-11", fin: "2026-08-11", accion: "Aviso de cierre contable mensual", area: "Finanzas", plataforma: "Email", responsable: "Patricio Roldan", descripcion: "Fechas de corte y criterios documentales para cierre contable del canal.", prioridad: "Estándar", estado: "Programado" },
+      { inicio: "2026-08-17", fin: "2026-08-19", accion: "Capacitacion avanzada Salesforce", area: "Comercial", plataforma: "Salesforce", responsable: "Micaela Drago", descripcion: "Automatizacion de seguimiento comercial y tableros de conversion.", prioridad: "Importante", estado: "Programado" },
+      { inicio: "2026-08-26", fin: "2026-08-27", accion: "Encuentro de cultura y bienestar", area: "RRHH", plataforma: "Teams / Zoom", responsable: "Noelia Pastor", descripcion: "Espacio para equipos del canal con foco en colaboracion y bienestar.", prioridad: "Informativo", estado: "Programado" },
+
+      { inicio: "2026-09-02", fin: "2026-09-04", accion: "Campana primavera distribuidores", area: "Marketing", plataforma: "Email", responsable: "Dario Beltran", descripcion: "Activacion multicanal para impulsar ventas estacionales en cartera activa.", prioridad: "Crítico", estado: "Programado" },
+      { inicio: "2026-09-09", fin: "2026-09-09", accion: "Comunicado SLA de soporte", area: "Soporte", plataforma: "Portal", responsable: "Valeria Pinto", descripcion: "Difusion de nuevos acuerdos de nivel de servicio para postventa.", prioridad: "Importante", estado: "Reprogramado" },
+      { inicio: "2026-09-15", fin: "2026-09-17", accion: "Ruta comercial litoral", area: "Comercial", plataforma: "Presencial", responsable: "Facundo Mena", descripcion: "Visitas a distribuidores clave para revisar pipeline de fin de trimestre.", prioridad: "Estándar", estado: "Programado" },
+      { inicio: "2026-09-24", fin: "2026-09-24", accion: "Ajustes de abastecimiento", area: "Operaciones", plataforma: "SAP", responsable: "Romina Viale", descripcion: "Comunicacion de reasignaciones logisticas por picos de demanda.", prioridad: "Importante", estado: "Programado" },
+
+      { inicio: "2026-10-06", fin: "2026-10-07", accion: "Lanzamiento promo cierre Q4", area: "Marketing", plataforma: "WhatsApp", responsable: "Gisela Torres", descripcion: "Envio de creatividades, argumentario y mecanica de bonificaciones para Q4.", prioridad: "Crítico", estado: "Programado" },
+      { inicio: "2026-10-13", fin: "2026-10-13", accion: "Recordatorio politicas de viaticos", area: "RRHH", plataforma: "Email", responsable: "Sebastian Noto", descripcion: "Actualizacion de politicas y comprobantes requeridos para visitas de campo.", prioridad: "Informativo", estado: "Programado" },
+      { inicio: "2026-10-19", fin: "2026-10-21", accion: "Mesa de cartera en riesgo", area: "Finanzas", plataforma: "Teams / Zoom", responsable: "Alicia Lamela", descripcion: "Plan de accion para cuentas en riesgo y acuerdos de cobranza con distribuidores.", prioridad: "Crítico", estado: "Programado" },
+      { inicio: "2026-10-27", fin: "2026-10-27", accion: "Q&A operativo de fin de ano", area: "Operaciones", plataforma: "Portal", responsable: "Esteban Lima", descripcion: "Sesion abierta para resolver dudas de abastecimiento y logistica de alta temporada.", prioridad: "Estándar", estado: "Programado" },
+
+      { inicio: "2026-11-03", fin: "2026-11-05", accion: "Planificacion 2027 con distribuidores", area: "Comercial", plataforma: "Presencial", responsable: "Daniela Rosetti", descripcion: "Jornadas de cocreacion de objetivos, forecast y cobertura territorial para 2027.", prioridad: "Crítico", estado: "Programado" },
+      { inicio: "2026-11-10", fin: "2026-11-10", accion: "Kit de comunicacion Black Week", area: "Marketing", plataforma: "Portal", responsable: "Leandro Baez", descripcion: "Entrega de piezas y recomendaciones para ejecucion de Black Week.", prioridad: "Importante", estado: "Programado" },
+      { inicio: "2026-11-17", fin: "2026-11-18", accion: "Capacitacion de cierre contable", area: "Finanzas", plataforma: "Teams / Zoom", responsable: "Rocio Del Campo", descripcion: "Refuerzo de procesos de cierre, conciliaciones y documentacion.", prioridad: "Estándar", estado: "Programado" },
+      { inicio: "2026-11-25", fin: "2026-11-25", accion: "Foro de resolucion rapida", area: "Soporte", plataforma: "WhatsApp", responsable: "Pablo Canto", descripcion: "Canal rapido para coordinar resolucion de incidencias en temporada alta.", prioridad: "Importante", estado: "Programado" },
+
+      { inicio: "2026-12-01", fin: "2026-12-02", accion: "Cierre de campanas anuales", area: "Marketing", plataforma: "Email", responsable: "Silvana Costa", descripcion: "Balance de rendimiento anual y lineamientos de continuidad para 2027.", prioridad: "Estándar", estado: "Programado" },
+      { inicio: "2026-12-09", fin: "2026-12-09", accion: "Comunicacion de ultimos despachos", area: "Operaciones", plataforma: "SAP", responsable: "Ivan Pereyra", descripcion: "Fechas limite de despacho, cortes logisticos y rutas alternativas.", prioridad: "Crítico", estado: "Programado" },
+      { inicio: "2026-12-15", fin: "2026-12-17", accion: "Reconocimiento anual a distribuidores", area: "Comercial", plataforma: "Presencial", responsable: "Alejandra Font", descripcion: "Evento de cierre con premiacion a distribuidores por desempeno anual.", prioridad: "Importante", estado: "Programado" },
+      { inicio: "2026-12-22", fin: "2026-12-22", accion: "Comunicado guardias y canales activos", area: "Soporte", plataforma: "Portal", responsable: "Matias Bonomi", descripcion: "Disponibilidad de guardias, horarios especiales y canales de emergencia.", prioridad: "Informativo", estado: "Programado" }
+    ];
+
+    let enrichedEvents = [];
+
+    let currentMonth = 0;
+    let sortState = { key: "inicio", direction: "asc" };
+    let cargaTabUnlocked = false;
+
+    const tableColumns = [
+      { key: "mes", label: "Mes" },
+      { key: "inicio", label: "Fecha inicio" },
+      { key: "fin", label: "Fecha fin" },
+      { key: "duracion", label: "Duración" },
+      { key: "accion", label: "Nombre de la acción" },
+      { key: "distribuidor", label: "Distribuidor" },
+      { key: "area", label: "Área" },
+      { key: "plataforma", label: "Plataforma" },
+      { key: "responsable", label: "Responsable" },
+      { key: "descripcion", label: "Descripción" },
+      { key: "prioridad", label: "Prioridad" },
+      { key: "estado", label: "Estado" }
+    ];
+
+    const tabs = document.querySelectorAll(".tab");
+    const panels = {
+      mensual: document.getElementById("panel-mensual"),
+      general: document.getElementById("panel-general"),
+      leyenda: document.getElementById("panel-leyenda"),
+      carga: document.getElementById("panel-carga")
+    };
+
+    function requestCargaTabAccess() {
+      const userPin = window.prompt("Ingresá PIN para abrir Carga / Test:");
+      if (userPin === null) return false;
+      if (userPin !== CARGA_TAB_PIN) {
+        alert("PIN incorrecto");
+        return false;
+      }
+      cargaTabUnlocked = true;
+      return true;
+    }
+
+    function activateTab(target) {
+      if (target === "carga" && !cargaTabUnlocked) {
+        const ok = requestCargaTabAccess();
+        if (!ok) return;
+      }
+      tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === target));
+      Object.entries(panels).forEach(([key, panel]) => {
+        panel.classList.toggle("active", key === target);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.tab;
+        activateTab(target);
+      });
+    });
+
+    function parseDate(dateString) {
+      const [y, m, d] = dateString.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function isValidDateString(value) {
+      return /^\d{4}-\d{2}-\d{2}$/.test(value);
+    }
+
+    function normalizeInputEvent(raw, fallbackIndex) {
+      const required = ["inicio", "fin", "accion", "area", "plataforma", "responsable", "descripcion", "prioridad", "estado", "distribuidor"];
+      for (const key of required) {
+        if (!raw[key] || String(raw[key]).trim() === "") {
+          throw new Error(`Falta el campo requerido: ${key}`);
+        }
+      }
+
+      if (!isValidDateString(raw.inicio) || !isValidDateString(raw.fin)) {
+        throw new Error("Formato de fecha inválido. Usá YYYY-MM-DD.");
+      }
+
+      if (!areaColors[raw.area]) throw new Error(`Área inválida: ${raw.area}`);
+      if (!platformColors[raw.plataforma]) throw new Error(`Plataforma inválida: ${raw.plataforma}`);
+      if (!priorityColors[raw.prioridad]) throw new Error(`Prioridad inválida: ${raw.prioridad}`);
+      if (!statusColors[raw.estado]) throw new Error(`Estado inválido: ${raw.estado}`);
+
+      const distribuidorValido = raw.distribuidor === ALL_DISTRIBUTORS_LABEL || distributorNames.includes(raw.distribuidor);
+      if (!distribuidorValido) throw new Error(`Distribuidor inválido: ${raw.distribuidor}`);
+
+      const inicioDate = parseDate(raw.inicio);
+      const finDate = parseDate(raw.fin);
+      if (finDate < inicioDate) throw new Error("La fecha fin no puede ser anterior a la fecha inicio.");
+
+      return {
+        inicio: raw.inicio,
+        fin: raw.fin,
+        accion: String(raw.accion).trim(),
+        area: raw.area,
+        plataforma: raw.plataforma,
+        responsable: String(raw.responsable).trim(),
+        descripcion: String(raw.descripcion).trim(),
+        prioridad: raw.prioridad,
+        estado: raw.estado,
+        distribuidor: raw.distribuidor,
+        _fallbackIndex: fallbackIndex
+      };
+    }
+
+    function rebuildEvents() {
+      enrichedEvents = eventsData.map((event, idx) => {
+        const start = parseDate(event.inicio);
+        const end = parseDate(event.fin);
+        const duration = diffDays(start, end) + 1;
+        return {
+          id: idx + 1,
+          ...event,
+          distribuidor: event.distribuidor || (idx % 4 === 0 ? ALL_DISTRIBUTORS_LABEL : distributorNames[idx % distributorNames.length]),
+          start,
+          end,
+          mes: monthNames[start.getMonth()],
+          duracion: `${duration} dia${duration > 1 ? "s" : ""}`
+        };
+      });
+    }
+
+    function refreshAllViews() {
+      renderMonth();
+      renderTableHead();
+      renderTable();
+      renderLegend();
+    }
+
+    function setLoading(isLoading) {
+      const overlay = document.getElementById("loadingOverlay");
+      overlay.classList.toggle("open", isLoading);
+      overlay.setAttribute("aria-hidden", isLoading ? "false" : "true");
+    }
+
+    function runWithLoading(action) {
+      setLoading(true);
+      window.setTimeout(() => {
+        try {
+          action();
+          refreshAllViews();
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          setLoading(false);
+        }
+      }, 260);
+    }
+
+    function formatDate(dateObj) {
+      return dateObj.toLocaleDateString("es-AR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      });
+    }
+
+    function normalizeDate(dateObj) {
+      return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+    }
+
+    function diffDays(a, b) {
+      const ms = normalizeDate(b) - normalizeDate(a);
+      return Math.round(ms / 86400000);
+    }
+
+    function toMondayBasedIndex(day) {
+      return day === 0 ? 6 : day - 1;
+    }
+
+    function getWeekStart(dateObj) {
+      const date = normalizeDate(dateObj);
+      const move = toMondayBasedIndex(date.getDay());
+      date.setDate(date.getDate() - move);
+      return date;
+    }
+
+    function addDays(dateObj, days) {
+      const d = normalizeDate(dateObj);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    function isSameDate(a, b) {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    function intersects(ev, from, to) {
+      return ev.end >= from && ev.start <= to;
+    }
+
+    function buildWeekSegments(weekStart, weekEnd, monthIndex) {
+      const weekEvents = enrichedEvents.filter((ev) => intersects(ev, weekStart, weekEnd));
+
+      const segments = weekEvents.map((ev) => {
+        const segStart = ev.start > weekStart ? ev.start : weekStart;
+        const segEnd = ev.end < weekEnd ? ev.end : weekEnd;
+        const colStart = diffDays(weekStart, segStart) + 1;
+        const span = diffDays(segStart, segEnd) + 1;
+        return { ev, colStart, span, lane: 0, monthIndex };
+      });
+
+      segments.sort((a, b) => a.colStart - b.colStart || b.span - a.span);
+      const laneEndCols = [];
+
+      segments.forEach((seg) => {
+        let lane = 0;
+        while (laneEndCols[lane] && laneEndCols[lane] >= seg.colStart) {
+          lane += 1;
+        }
+        seg.lane = lane;
+        laneEndCols[lane] = seg.colStart + seg.span - 1;
+      });
+
+      return { segments, laneCount: Math.max(1, laneEndCols.length) };
+    }
+
+    function renderWeekdays() {
+      const row = document.getElementById("weekdayRow");
+      row.innerHTML = weekdayNames.map((name) => `<div class="weekday">${name}</div>`).join("");
+    }
+
+    function renderMonth() {
+      const monthTitle = document.getElementById("monthTitle");
+      const monthMeta = document.getElementById("monthMeta");
+      const container = document.getElementById("calendarWeeks");
+
+      monthTitle.textContent = `${monthNames[currentMonth]} ${CALENDAR_YEAR}`;
+
+      const monthStart = new Date(CALENDAR_YEAR, currentMonth, 1);
+      const monthEnd = new Date(CALENDAR_YEAR, currentMonth + 1, 0);
+      const start = getWeekStart(monthStart);
+      const end = addDays(getWeekStart(monthEnd), 6);
+
+      const monthEventsCount = enrichedEvents.filter((ev) => ev.start.getMonth() === currentMonth).length;
+      monthMeta.textContent = `${monthEventsCount} eventos en ${monthNames[currentMonth]}`;
+
+      const weeks = [];
+      let cursor = start;
+      while (cursor <= end) {
+        const dates = [];
+        for (let i = 0; i < 7; i += 1) {
+          dates.push(addDays(cursor, i));
+        }
+        const weekStart = dates[0];
+        const weekEnd = dates[6];
+        weeks.push({ dates, weekStart, weekEnd });
+        cursor = addDays(cursor, 7);
+      }
+
+      const today = normalizeDate(new Date());
+
+      container.innerHTML = weeks.map((week) => {
+        const { segments, laneCount } = buildWeekSegments(week.weekStart, week.weekEnd, currentMonth);
+        const dayCells = week.dates.map((dateObj) => {
+          const isOtherMonth = dateObj.getMonth() !== currentMonth;
+          const isToday = isSameDate(dateObj, today);
+          return `
+            <div class="day-cell ${isOtherMonth ? "other-month" : ""} ${isToday ? "today" : ""}">
+              <span class="day-number">${dateObj.getDate()}</span>
+            </div>
+          `;
+        }).join("");
+
+        const bars = segments.map((seg) => {
+          const ev = seg.ev;
+          const leftPct = ((seg.colStart - 1) / 7) * 100;
+          const widthPct = (seg.span / 7) * 100;
+          const top = seg.lane * 24;
+          const startMonthMatch = ev.start.getMonth() === currentMonth;
+          const endMonthMatch = ev.end.getMonth() === currentMonth;
+          const prefix = startMonthMatch || seg.colStart > 1 ? "" : "◁ ";
+          const suffix = endMonthMatch || seg.colStart + seg.span - 1 < 7 ? "" : " ▷";
+
+          return `
+            <button
+              type="button"
+              class="event-bar"
+              style="left: calc(${leftPct}% + 2px); width: calc(${widthPct}% - 4px); top: ${top}px; background: ${statusColors[ev.estado]};"
+              data-event-id="${ev.id}"
+              title="${ev.accion}"
+            >
+              <span class="event-dot" style="background:${priorityColors[ev.prioridad]};"></span>
+              <span class="event-label">${prefix}${ev.accion}${suffix}</span>
+            </button>
+          `;
+        }).join("");
+
+        return `
+          <div class="week-row" style="height: ${Math.max(122, 40 + laneCount * 24 + 52)}px;">
+            <div class="days-grid">${dayCells}</div>
+            <div class="events-layer">${bars}</div>
+          </div>
+        `;
+      }).join("");
+
+      container.querySelectorAll(".event-bar").forEach((button) => {
+        button.addEventListener("click", () => {
+          const id = Number(button.dataset.eventId);
+          const ev = enrichedEvents.find((item) => item.id === id);
+          if (ev) openModal(ev);
+        });
+      });
+    }
+
+    function buildOptions(selectId, values) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = [`<option value="">Todos</option>`, ...values.map((v) => `<option value="${v}">${v}</option>`)].join("");
+    }
+
+    function initializeFilters() {
+      buildOptions("filterMes", monthNames);
+      buildOptions("filterDistribuidor", [ALL_DISTRIBUTORS_LABEL, ...distributorNames]);
+      buildOptions("filterArea", Object.keys(areaColors));
+      buildOptions("filterPlataforma", Object.keys(platformColors));
+      buildOptions("filterPrioridad", Object.keys(priorityColors));
+      buildOptions("filterEstado", Object.keys(statusColors));
+
+      ["filterMes", "filterDistribuidor", "filterArea", "filterPlataforma", "filterPrioridad", "filterEstado"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", renderTable);
+      });
+    }
+
+    function initializeDataLab() {
+      const addEventBtn = document.getElementById("addEventBtn");
+      const resetBtn = document.getElementById("resetEventFormBtn");
+      const loadJsonBtn = document.getElementById("loadJsonBtn");
+      const sampleJsonBtn = document.getElementById("sampleJsonBtn");
+
+      buildOptions("formDistribuidor", [ALL_DISTRIBUTORS_LABEL, ...distributorNames]);
+      buildOptions("formArea", Object.keys(areaColors));
+      buildOptions("formPlataforma", Object.keys(platformColors));
+      buildOptions("formPrioridad", Object.keys(priorityColors));
+      buildOptions("formEstado", Object.keys(statusColors));
+
+      window.addEventListener("keydown", (event) => {
+        if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "e") {
+          activateTab("carga");
+        }
+      });
+
+      resetBtn.addEventListener("click", () => {
+        document.getElementById("eventForm").reset();
+      });
+
+      addEventBtn.addEventListener("click", () => {
+        const raw = {
+          inicio: document.getElementById("formInicio").value,
+          fin: document.getElementById("formFin").value,
+          accion: document.getElementById("formAccion").value,
+          area: document.getElementById("formArea").value,
+          plataforma: document.getElementById("formPlataforma").value,
+          responsable: document.getElementById("formResponsable").value,
+          descripcion: document.getElementById("formDescripcion").value,
+          prioridad: document.getElementById("formPrioridad").value,
+          estado: document.getElementById("formEstado").value,
+          distribuidor: document.getElementById("formDistribuidor").value
+        };
+
+        runWithLoading(() => {
+          const normalized = normalizeInputEvent(raw, eventsData.length + 1);
+          eventsData.push(normalized);
+          rebuildEvents();
+        });
+      });
+
+      sampleJsonBtn.addEventListener("click", () => {
+        document.getElementById("bulkJsonInput").value = JSON.stringify([
+          {
+            inicio: "2026-06-29",
+            fin: "2026-06-30",
+            accion: "Prueba de carga masiva",
+            area: "Marketing",
+            plataforma: "Portal",
+            responsable: "Test QA",
+            descripcion: "Evento de ejemplo para validar carga de datos en entorno de prueba.",
+            prioridad: "Estándar",
+            estado: "Programado",
+            distribuidor: ALL_DISTRIBUTORS_LABEL
+          }
+        ], null, 2);
+      });
+
+      loadJsonBtn.addEventListener("click", () => {
+        runWithLoading(() => {
+          const value = document.getElementById("bulkJsonInput").value.trim();
+          if (!value) throw new Error("Pegá un JSON válido para cargar eventos.");
+          const parsed = JSON.parse(value);
+          if (!Array.isArray(parsed)) throw new Error("El JSON debe ser un array de eventos.");
+          const normalizedList = parsed.map((item, idx) => normalizeInputEvent(item, idx + 1));
+          eventsData = [...eventsData, ...normalizedList];
+          rebuildEvents();
+        });
+      });
+    }
+
+    function getFilteredEvents() {
+      const mes = document.getElementById("filterMes").value;
+      const distribuidor = document.getElementById("filterDistribuidor").value;
+      const area = document.getElementById("filterArea").value;
+      const plataforma = document.getElementById("filterPlataforma").value;
+      const prioridad = document.getElementById("filterPrioridad").value;
+      const estado = document.getElementById("filterEstado").value;
+
+      return enrichedEvents.filter((ev) => {
+        if (mes && ev.mes !== mes) return false;
+        if (distribuidor === ALL_DISTRIBUTORS_LABEL && ev.distribuidor !== ALL_DISTRIBUTORS_LABEL) return false;
+        if (distribuidor && distribuidor !== ALL_DISTRIBUTORS_LABEL && ev.distribuidor !== ALL_DISTRIBUTORS_LABEL && ev.distribuidor !== distribuidor) return false;
+        if (area && ev.area !== area) return false;
+        if (plataforma && ev.plataforma !== plataforma) return false;
+        if (prioridad && ev.prioridad !== prioridad) return false;
+        if (estado && ev.estado !== estado) return false;
+        return true;
+      });
+    }
+
+    function sortEvents(data) {
+      const { key, direction } = sortState;
+      const sorted = [...data].sort((a, b) => {
+        let first = a[key];
+        let second = b[key];
+
+        if (key === "inicio" || key === "fin") {
+          first = parseDate(a[key]);
+          second = parseDate(b[key]);
+        }
+
+        if (first < second) return direction === "asc" ? -1 : 1;
+        if (first > second) return direction === "asc" ? 1 : -1;
+        return 0;
+      });
+      return sorted;
+    }
+
+    function renderTableHead() {
+      const theadRow = document.getElementById("tableHead");
+      theadRow.innerHTML = tableColumns.map((col) => {
+        const isActive = sortState.key === col.key;
+        const indicator = !isActive ? "↕" : sortState.direction === "asc" ? "▲" : "▼";
+        return `<th data-key="${col.key}">${col.label}<span class="sort-indicator">${indicator}</span></th>`;
+      }).join("");
+
+      theadRow.querySelectorAll("th").forEach((th) => {
+        th.addEventListener("click", () => {
+          const key = th.dataset.key;
+          if (sortState.key === key) {
+            sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
+          } else {
+            sortState = { key, direction: "asc" };
+          }
+          renderTableHead();
+          renderTable();
+        });
+      });
+    }
+
+    function renderTable() {
+      const body = document.getElementById("tableBody");
+      const counter = document.getElementById("counterEventos");
+      const filtered = sortEvents(getFilteredEvents());
+
+      counter.textContent = `Eventos filtrados: ${filtered.length} de ${enrichedEvents.length}`;
+
+      body.innerHTML = filtered.map((ev) => `
+        <tr>
+          <td>${ev.mes}</td>
+          <td>${formatDate(parseDate(ev.inicio))}</td>
+          <td>${formatDate(parseDate(ev.fin))}</td>
+          <td>${ev.duracion}</td>
+          <td>${ev.accion}</td>
+          <td>${ev.distribuidor}</td>
+          <td><span class="area-chip" style="background:${areaColors[ev.area]};">${ev.area}</span></td>
+          <td><span class="platform-badge" style="background:${platformColors[ev.plataforma]};">${ev.plataforma}</span></td>
+          <td>${ev.responsable}</td>
+          <td>${ev.descripcion}</td>
+          <td><span class="badge" style="background:${priorityColors[ev.prioridad]};">${ev.prioridad}</span></td>
+          <td><span class="badge" style="background:${statusColors[ev.estado]};">${ev.estado}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderLegend() {
+      const areaList = document.getElementById("legendAreas");
+      const platformList = document.getElementById("legendPlataformas");
+      const priorityList = document.getElementById("legendPrioridades");
+      const statusList = document.getElementById("legendEstados");
+      const priorityListSide = document.getElementById("legendPrioridadesSide");
+      const statusListSide = document.getElementById("legendEstadosSide");
+
+      const areasHtml = Object.entries(areaColors).map(([name, color]) => `
+        <div class="legend-item"><span class="swatch" style="background:${color};"></span>${name}</div>
+      `).join("");
+
+      const platformsHtml = Object.entries(platformColors).map(([name, color]) => `
+        <div class="legend-item"><span class="platform-badge" style="background:${color};">${name}</span></div>
+      `).join("");
+
+      const prioritiesHtml = Object.entries(priorityColors).map(([name, color]) => `
+        <div class="legend-item"><span class="dot" style="background:${color};"></span>${name}</div>
+      `).join("");
+
+      const statusHtml = Object.entries(statusColors).map(([name, color]) => `
+        <div class="legend-item"><span class="badge status-badge" style="background:${color};">${name}</span></div>
+      `).join("");
+
+      areaList.innerHTML = areasHtml;
+      platformList.innerHTML = platformsHtml;
+      priorityList.innerHTML = prioritiesHtml;
+      statusList.innerHTML = statusHtml;
+
+      if (priorityListSide) priorityListSide.innerHTML = prioritiesHtml;
+      if (statusListSide) statusListSide.innerHTML = statusHtml;
+    }
+
+    function openModal(ev) {
+      const modal = document.getElementById("eventModal");
+      const title = document.getElementById("modalTitle");
+      const body = document.getElementById("modalBody");
+
+      title.textContent = ev.accion;
+      body.innerHTML = `
+        <div class="field"><strong>Mes:</strong> ${ev.mes}</div>
+        <div class="field"><strong>Fecha inicio:</strong> ${formatDate(ev.start)}</div>
+        <div class="field"><strong>Fecha fin:</strong> ${formatDate(ev.end)}</div>
+        <div class="field"><strong>Duración:</strong> ${ev.duracion}</div>
+        <div class="field"><strong>Distribuidor:</strong> ${ev.distribuidor}</div>
+        <div class="field"><strong>Área:</strong> <span class="area-chip" style="background:${areaColors[ev.area]};">${ev.area}</span></div>
+        <div class="field"><strong>Plataforma:</strong> <span class="platform-badge" style="background:${platformColors[ev.plataforma]};">${ev.plataforma}</span></div>
+        <div class="field"><strong>Responsable:</strong> ${ev.responsable}</div>
+        <div class="field"><strong>Dimensiones:</strong>
+          <div class="combo-badges">
+            <span class="badge" style="background:${priorityColors[ev.prioridad]};">Prioridad: ${ev.prioridad}</span>
+            <span class="badge" style="background:${statusColors[ev.estado]};">Estado: ${ev.estado}</span>
+          </div>
+        </div>
+        <div class="field description"><strong>Descripción:</strong> ${ev.descripcion}</div>
+      `;
+
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("eventModal");
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    document.getElementById("prevMonth").addEventListener("click", () => {
+      currentMonth = (currentMonth + 11) % 12;
+      renderMonth();
+    });
+
+    document.getElementById("nextMonth").addEventListener("click", () => {
+      currentMonth = (currentMonth + 1) % 12;
+      renderMonth();
+    });
+
+    document.getElementById("closeModal").addEventListener("click", closeModal);
+    document.getElementById("eventModal").addEventListener("click", (e) => {
+      if (e.target.id === "eventModal") closeModal();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    function initializeMonth() {
+      const today = new Date();
+      if (today.getFullYear() === CALENDAR_YEAR) {
+        currentMonth = today.getMonth();
+      } else {
+        currentMonth = 0;
+      }
+    }
+
+    renderWeekdays();
+    rebuildEvents();
+    initializeMonth();
+    initializeFilters();
+    initializeDataLab();
+    refreshAllViews();
+  </script>
+</body>
+</html>
