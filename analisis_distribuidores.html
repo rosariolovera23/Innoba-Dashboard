@@ -94,7 +94,9 @@
   .bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;color:#fff;font-weight:700;font-size:11px}
   .wt{width:44px;text-align:center;color:var(--muted);font-size:11px}
   footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
-  .defcard{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--bg)}
+  .defcard{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--bg);cursor:pointer;transition:.15s}
+  .defcard:hover{border-color:var(--bayer-green);transform:translateY(-2px)}
+  .defcard.active{border-color:var(--bayer-green);box-shadow:0 0 0 2px rgba(0,97,127,.18);background:#fff}
   .defcard .h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
   .defcard .num{width:26px;height:26px;border-radius:50%;background:var(--bayer-green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
   .defcard .t{font-weight:700;color:var(--bayer-blue);font-size:14px}
@@ -131,13 +133,11 @@
 <main>
   <nav class="tabs">
     <button data-tab="general" class="active">Análisis General</button>
-    <button data-tab="individual">Análisis Individual</button>
+    <button data-tab="individual">Análisis Específico</button>
     <button data-tab="matriz">Matriz Comparativa</button>
     <button data-tab="ranking">Rankings</button>
-    <button data-tab="bus">Por BU / Squad</button>
     <button data-tab="competencias">Competencias</button>
     <button data-tab="digital">Digitalización</button>
-    <button data-tab="cobertura">Cobertura 2026</button>
     <button class="printbtn" onclick="window.print()">⬇ Exportar PDF</button>
   </nav>
 
@@ -145,19 +145,25 @@
   <section class="panel active" id="general">
     <div class="card">
       <h2>Estado del Assessment — Padrón 2026</h2>
-      <p class="sub">Comparación inicial del padrón actual de distribuidores (fuente: <em>Distribuidores 2026.xlsx</em>) según cuenten o no con análisis realizado. Actualmente <strong id="g-sin-txt">–</strong> distribuidores están <strong>sin assessment</strong>.</p>
+      <p class="sub">Cobertura real de análisis cruzando la <strong>PPT de resultados</strong> (evaluados con puntaje) y el <strong>padrón Excel 2026</strong>. Un distribuidor tiene assessment si fue evaluado en la PPT o está marcado en el Excel. Actualmente <strong id="g-sin-txt">–</strong> distribuidores están <strong>sin assessment (pendientes)</strong>.</p>
       <div class="grid kpis">
         <div class="kpi"><div class="n" id="g-total">–</div><div class="l">Distribuidores en padrón 2026</div></div>
-        <div class="kpi"><div class="n" id="g-con" style="color:var(--green)">–</div><div class="l">Con assessment</div></div>
+        <div class="kpi kpi-click" id="g-con-kpi" title="Click para ver el listado" style="border-color:var(--green)"><div class="n" id="g-con" style="color:var(--green)">–</div><div class="l">Con assessment <span class="chev" style="color:var(--green)">▸</span></div></div>
         <div class="kpi kpi-click" id="g-sin-kpi" title="Click para ver el listado de faltantes"><div class="n" id="g-sin" style="color:var(--red)">–</div><div class="l">Sin assessment (pendientes) <span class="chev">▸</span></div></div>
         <div class="kpi"><div class="n" id="g-pct">–</div><div class="l">Cobertura actual</div></div>
       </div>
+      <div id="g-con-panel" class="collapse"></div>
       <div id="g-sin-panel" class="collapse"></div>
       <div class="two" style="margin-top:18px">
         <div class="chartbox"><canvas id="chartCovBUtop"></canvas></div>
         <div class="chartbox"><canvas id="chartCovDonutTop"></canvas></div>
       </div>
-      <p class="sub" style="margin-top:14px;margin-bottom:0">Ver el detalle por BU/squad y el listado de pendientes en la pestaña <strong>Cobertura 2026</strong>.</p>
+    </div>
+
+    <div class="card">
+      <h2>Cobertura por BU y Squad</h2>
+      <p class="sub">Estado del assessment por unidad de negocio y squad. En rojo, los squads con más distribuidores pendientes.</p>
+      <div class="tblwrap"><table id="covTable"></table></div>
     </div>
 
     <div class="card">
@@ -166,10 +172,12 @@
       <div class="grid kpis">
         <div class="kpi"><div class="n" id="k-dist">–</div><div class="l">Distribuidores evaluados</div></div>
         <div class="kpi"><div class="n">76%</div><div class="l">Score general de red</div></div>
-        <div class="kpi"><div class="n" id="k-top">–</div><div class="l">Distribuidores ≥ 80%</div></div>
-        <div class="kpi"><div class="n" id="k-low">–</div><div class="l">Distribuidores ≤ 69%</div></div>
-        <div class="kpi"><div class="n">3 / 10</div><div class="l">BUs / Squads</div></div>
+        <div class="kpi kpi-click" id="k-top-kpi" title="Click para ver el listado" style="border-color:var(--green)"><div class="n" id="k-top" style="color:var(--green)">–</div><div class="l">Distribuidores ≥ 80% <span class="chev" style="color:var(--green)">▸</span></div></div>
+        <div class="kpi kpi-click" id="k-low-kpi" title="Click para ver el listado"><div class="n" id="k-low" style="color:var(--red)">–</div><div class="l">Distribuidores ≤ 69% <span class="chev">▸</span></div></div>
+        <div class="kpi"><div class="n" id="k-busq">–</div><div class="l">BUs / Squads</div></div>
       </div>
+      <div id="k-top-panel" class="collapse"></div>
+      <div id="k-low-panel" class="collapse"></div>
     </div>
 
     <div class="card">
@@ -195,12 +203,23 @@
   <!-- ============ INDIVIDUAL ============ -->
   <section class="panel" id="individual">
     <div class="card">
-      <h2>Análisis individual por distribuidor</h2>
+      <h2>Análisis Específico por distribuidor</h2>
       <p class="sub">Seleccioná un distribuidor para ver su perfil de competencias, fortalezas y brechas frente al promedio de la red.</p>
       <div class="controls">
+        <select id="distBU"><option value="">Todas las BU</option></select>
+        <select id="distSquad"><option value="">Todos los squads</option></select>
         <select class="big" id="distSelect"></select>
       </div>
       <div id="distDetail"></div>
+    </div>
+    <div class="card">
+      <h2>Comparativa por BU y Squad</h2>
+      <p class="sub">Promedio total de cada squad. BU Sur está por encima de la media; BU Centro por debajo. Río Cuarto y Núcleo Sur son los squads más profesionalizados; Centro y NEA los de mayor foco.</p>
+      <div class="chartbox" style="height:420px"><canvas id="chartSquad"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Promedio de competencias por squad</h2>
+      <div class="tblwrap"><table id="squadTable"></table></div>
     </div>
   </section>
 
@@ -250,30 +269,15 @@
     </div>
   </section>
 
-  <!-- ============ BU / SQUAD ============ -->
-  <section class="panel" id="bus">
-    <div class="card">
-      <h2>Comparativa por BU y Squad</h2>
-      <p class="sub">Promedio total de cada squad. BU Sur está por encima de la media; BU Centro por debajo. Río Cuarto y Núcleo Sur son los squads más profesionalizados; Centro y NEA los de mayor foco.</p>
-      <div class="chartbox" style="height:420px"><canvas id="chartSquad"></canvas></div>
-    </div>
-    <div class="card">
-      <h2>Promedio de competencias por squad</h2>
-      <div class="tblwrap"><table id="squadTable"></table></div>
-    </div>
-  </section>
-
   <!-- ============ COMPETENCIAS ============ -->
   <section class="panel" id="competencias">
     <div class="card">
       <h2>Las 9 competencias del "Distribuidor Ideal"</h2>
-      <p class="sub">Metodología de evaluación estandarizada con 102 preguntas. Cada competencia tiene un peso distinto en el score total; las competencias comerciales concentran el 75% de la ponderación.</p>
+      <p class="sub">Metodología de evaluación estandarizada con 102 preguntas. Cada competencia tiene un peso distinto en el score total; las competencias comerciales concentran el 75% de la ponderación. <strong>Hacé click en una competencia</strong> para ver su análisis detallado.</p>
       <div class="grid" id="defGrid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"></div>
     </div>
-    <div class="card">
-      <h2>Ejemplo de subtemas — Competencia Gerencial</h2>
-      <p class="sub">Cada competencia se descompone en subtemas ponderados de manera diferente. A modo de ejemplo, los 11 subtemas de la Visión Estratégica / Gerencial:</p>
-      <div id="gerSubs"></div>
+    <div class="card" id="compDetailCard" style="display:none">
+      <div id="compDetail"></div>
     </div>
   </section>
 
@@ -295,40 +299,6 @@
         <li>Como contrapartida, la <strong>conectividad al Sell-Out Reader es alta (95%)</strong> — el punto más fuerte de la dimensión digital.</li>
         <li>Las inversiones en CRM (55%) y la estructura para el área digital (56%) son los subtemas más críticos y donde se concentra la mayor oportunidad de desarrollo.</li>
       </ul>
-    </div>
-  </section>
-
-  <!-- ============ COBERTURA 2026 ============ -->
-  <section class="panel" id="cobertura">
-    <div class="card">
-      <h2>Cobertura de Assessment — Padrón 2026</h2>
-      <p class="sub">Comparación inicial del padrón actual de distribuidores (fuente: <em>Distribuidores 2026.xlsx</em>) según cuenten o no con análisis (assessment) realizado. Permite dimensionar el trabajo pendiente para completar la evaluación de la red.</p>
-      <div class="grid kpis">
-        <div class="kpi"><div class="n" id="c-total">–</div><div class="l">Distribuidores en padrón 2026</div></div>
-        <div class="kpi"><div class="n" id="c-con">–</div><div class="l">Con assessment</div></div>
-        <div class="kpi"><div class="n" id="c-sin" style="color:var(--red)">–</div><div class="l">Sin assessment (pendientes)</div></div>
-        <div class="kpi"><div class="n" id="c-pct">–</div><div class="l">Cobertura actual</div></div>
-      </div>
-      <div class="two" style="margin-top:18px">
-        <div class="chartbox"><canvas id="chartCovBU"></canvas></div>
-        <div class="chartbox"><canvas id="chartCovDonut"></canvas></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Cobertura por BU y Squad</h2>
-      <p class="sub">Estado del assessment por unidad de negocio y squad. En rojo, los squads con más distribuidores pendientes.</p>
-      <div class="tblwrap"><table id="covTable"></table></div>
-    </div>
-
-    <div class="card">
-      <h2>Distribuidores SIN assessment</h2>
-      <p class="sub">Listado de centros pendientes de análisis, a priorizar para completar la evaluación de la red.</p>
-      <div class="controls">
-        <input type="text" id="pendSearch" placeholder="Buscar…">
-        <select id="pendBU"><option value="">Todas las BU</option></select>
-      </div>
-      <div class="tblwrap"><table id="pendTable"></table></div>
     </div>
   </section>
 
@@ -473,21 +443,47 @@ const DISTS = RAW.map(r=>({
   scores:{ger:r[4],cob:r[5],com:r[6],dem:r[7],rrhh:r[8],fin:r[9],dig:r[10],log:r[11],seg:r[12]}
 }));
 
+// Solo las razones sociales analizadas que están en el padrón 2026 (excluye las que están solo en la PPT).
+const ONLY_PPT_NAMES = ["CAM","HIJOS DE DANIEL E YOUNG","MAININI EDUARDO ALEJANDRO","PUESTOLOB SA"];
+const DISTS76 = DISTS.filter(d=>!ONLY_PPT_NAMES.includes(d.name.toUpperCase().trim()));
+
 /* ------------ HELPERS ------------ */
 const cls = v => v>=80?"g":(v>=70?"y":"r");
 const colorOf = v => v>=80?getCSS("--green"):(v>=70?getCSS("--yellow"):getCSS("--red"));
 function getCSS(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
 const avg = arr => Math.round(arr.reduce((a,b)=>a+b,0)/arr.length);
 
-// network average per competency
+// network average per competency (padrón 2026, 76 distribuidores)
 const netAvg = {};
-COMPS.forEach(c=> netAvg[c.key] = avg(DISTS.map(d=>d.scores[c.key])) );
-const netTotalCalc = avg(DISTS.map(d=>d.total));
+COMPS.forEach(c=> netAvg[c.key] = avg(DISTS76.map(d=>d.scores[c.key])) );
+const netTotalCalc = avg(DISTS76.map(d=>d.total));
 
 /* ------------ KPIs ------------ */
-document.getElementById("k-dist").textContent = DISTS.length;
-document.getElementById("k-top").textContent = DISTS.filter(d=>d.total>=80).length;
-document.getElementById("k-low").textContent = DISTS.filter(d=>d.total<=69).length;
+document.getElementById("k-dist").textContent = DISTS76.length;
+document.getElementById("k-top").textContent = DISTS76.filter(d=>d.total>=80).length;
+document.getElementById("k-low").textContent = DISTS76.filter(d=>d.total<=69).length;
+document.getElementById("k-busq").textContent =
+  [...new Set(DISTS76.map(d=>d.bu))].length + " / " + [...new Set(DISTS76.map(d=>d.squad))].length;
+
+// Desplegables ≥80% y ≤69%
+(function(){
+  const build=(list,color,bg,idxColor)=>`
+    <div class="pendbox" style="border-color:${color};background:${bg}">
+      <h4 style="color:${idxColor}">${list.length} razones sociales</h4>
+      <div class="pendgrid">
+        ${list.sort((a,b)=>b.total-a.total).map((d,i)=>`<div class="it" style="border-bottom-color:${color}44">
+          <span class="idx" style="color:${idxColor}">${i+1}</span>
+          <span class="nm">${d.name}</span>
+          <span class="mt">${d.bu} · ${d.squad} · <strong>${d.total}%</strong></span></div>`).join("")}
+      </div>
+    </div>`;
+  document.getElementById("k-top-panel").innerHTML=build(DISTS76.filter(d=>d.total>=80),getCSS("--green"),getCSS("--green-bg"),"#1c6b3c");
+  document.getElementById("k-low-panel").innerHTML=build(DISTS76.filter(d=>d.total<=69),getCSS("--red"),getCSS("--red-bg"),"#a32b25");
+  [["k-top-kpi","k-top-panel"],["k-low-kpi","k-low-panel"]].forEach(([k,p])=>{
+    const kpi=document.getElementById(k), panel=document.getElementById(p);
+    kpi.addEventListener("click",()=>{kpi.classList.toggle("open");panel.classList.toggle("open");});
+  });
+})();
 
 /* ------------ GENERAL: competency chart + bars ------------ */
 new Chart(document.getElementById("chartComp"),{
@@ -515,12 +511,83 @@ new Chart(document.getElementById("chartComp"),{
 
 /* ------------ INDIVIDUAL ------------ */
 const sel=document.getElementById("distSelect");
-DISTS.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(d=>{
-  const o=document.createElement("option");o.value=d.name;o.textContent=`${d.name} — ${d.total}% (${d.squad})`;sel.appendChild(o);
-});
+const distBUSel=document.getElementById("distBU"), distSqSel=document.getElementById("distSquad");
+[...new Set(DISTS76.map(d=>d.bu))].sort().forEach(b=>distBUSel.insertAdjacentHTML("beforeend",`<option>${b}</option>`));
+function refreshDistSquads(){
+  const bu=distBUSel.value; distSqSel.innerHTML='<option value="">Todos los squads</option>';
+  [...new Set(DISTS76.filter(d=>!bu||d.bu===bu).map(d=>d.squad))].sort()
+    .forEach(s=>distSqSel.insertAdjacentHTML("beforeend",`<option>${s}</option>`));
+}
+function refreshDistOptions(keep){
+  const bu=distBUSel.value, sq=distSqSel.value;
+  const list=DISTS76.filter(d=>(!bu||d.bu===bu)&&(!sq||d.squad===sq))
+    .sort((a,b)=>b.total-a.total);
+  const scopeTxt = sq?`Squad ${sq}`:(bu?`BU ${bu}`:"Toda la red");
+  const allOpt = list.length>1 ? `<option value="__ALL__">▣ Todos los distribuidores — promedio ${scopeTxt} (${list.length})</option>` : "";
+  sel.innerHTML=allOpt + list.map(d=>`<option value="${d.name}">${d.name} — ${d.total}% (${d.squad})</option>`).join("");
+  if(list.length){
+    let target;
+    if(keep==="__ALL__" && allOpt) target="__ALL__";
+    else if(keep && list.some(d=>d.name===keep)) target=keep;
+    else target = allOpt ? "__ALL__" : list[0].name;
+    sel.value=target;
+    if(target==="__ALL__") showAggregate(list,scopeTxt); else showDist(target);
+  } else {
+    document.getElementById("distDetail").innerHTML=`<div class="distrib-detail"><span class="pill">No hay distribuidores para el filtro seleccionado.</span></div>`;
+  }
+}
 let radarChart=null;
+function showAggregate(list,scopeTxt){
+  const sc={}; COMPS.forEach(c=>sc[c.key]=avg(list.map(d=>d.scores[c.key])));
+  const total=avg(list.map(d=>d.total));
+  const strengths=[...COMPS].sort((a,b)=>sc[b.key]-sc[a.key]).slice(0,3);
+  const gaps=[...COMPS].sort((a,b)=>sc[a.key]-sc[b.key]).slice(0,3);
+  const top=[...list].sort((a,b)=>b.total-a.total).slice(0,3);
+  const bottom=[...list].sort((a,b)=>a.total-b.total).slice(0,3);
+  const box=document.getElementById("distDetail");
+  box.innerHTML=`
+    <div class="distrib-detail">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center">
+        <div><strong style="font-size:18px;color:var(--bayer-blue)">Promedio — ${scopeTxt}</strong>
+        <div class="pill">${list.length} distribuidores</div></div>
+        <span class="badge ${cls(total)}" style="font-size:16px">Total ${total}%</span>
+      </div>
+      <div class="two" style="margin-top:16px">
+        <div class="chartbox"><canvas id="radarOne"></canvas></div>
+        <div>${COMPS.map(c=>{const v=sc[c.key];const diff=v-netAvg[c.key];
+          return `<div class="bar-row"><div class="lab">${c.short}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${v}%;background:${colorOf(v)}">${v}%</div></div>
+          <div class="wt" style="color:${diff>=0?'#2e9e5b':'#d6453d'}">${diff>=0?'+':''}${diff}</div></div>`;}).join("")}
+          <div class="pill" style="text-align:right;display:block;margin-top:6px">Δ vs. promedio de red</div>
+        </div>
+      </div>
+      <div class="two" style="margin-top:8px">
+        <div><h3 style="color:#2e9e5b">Fortalezas del grupo</h3><ul class="notes">
+          ${strengths.map(c=>`<li><strong>${c.label}:</strong> ${sc[c.key]}%</li>`).join("")}</ul></div>
+        <div><h3 style="color:#d6453d">Brechas / foco del grupo</h3><ul class="notes">
+          ${gaps.map(c=>`<li><strong>${c.label}:</strong> ${sc[c.key]}%</li>`).join("")}</ul></div>
+      </div>
+      <div class="two" style="margin-top:8px">
+        <div><h3 style="color:#2e9e5b">Mejores del grupo</h3><ul class="notes">
+          ${top.map(d=>`<li><strong>${d.name}:</strong> ${d.total}%</li>`).join("")}</ul></div>
+        <div><h3 style="color:#d6453d">A priorizar</h3><ul class="notes">
+          ${bottom.map(d=>`<li><strong>${d.name}:</strong> ${d.total}%</li>`).join("")}</ul></div>
+      </div>
+    </div>`;
+  if(radarChart)radarChart.destroy();
+  radarChart=new Chart(document.getElementById("radarOne"),{
+    type:"radar",
+    data:{labels:COMPS.map(c=>c.short),
+      datasets:[
+        {label:"Promedio "+scopeTxt,data:COMPS.map(c=>sc[c.key]),backgroundColor:"rgba(0,97,127,.25)",borderColor:getCSS("--bayer-green"),borderWidth:2,pointBackgroundColor:getCSS("--bayer-green")},
+        {label:"Promedio red",data:COMPS.map(c=>netAvg[c.key]),backgroundColor:"rgba(102,181,18,.10)",borderColor:getCSS("--bayer-lime"),borderWidth:1,borderDash:[5,4],pointRadius:0}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:100,ticks:{stepSize:20}}},plugins:{legend:{position:"bottom"}}}
+  });
+}
 function showDist(name){
-  const d=DISTS.find(x=>x.name===name);
+  const d=DISTS76.find(x=>x.name===name);
+  if(!d) return;
   const box=document.getElementById("distDetail");
   const strengths=[...COMPS].sort((a,b)=>d.scores[b.key]-d.scores[a.key]).slice(0,3);
   const gaps=[...COMPS].sort((a,b)=>d.scores[a.key]-d.scores[b.key]).slice(0,3);
@@ -558,22 +625,31 @@ function showDist(name){
     options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:100,ticks:{stepSize:20}}},plugins:{legend:{position:"bottom"}}}
   });
 }
-sel.addEventListener("change",e=>showDist(e.target.value));
-showDist(DISTS.slice().sort((a,b)=>b.total-a.total)[0].name);
-sel.value=DISTS.slice().sort((a,b)=>b.total-a.total)[0].name;
+sel.addEventListener("change",e=>{
+  const v=e.target.value;
+  if(v==="__ALL__"){
+    const bu=distBUSel.value, sq=distSqSel.value;
+    const list=DISTS76.filter(d=>(!bu||d.bu===bu)&&(!sq||d.squad===sq)).sort((a,b)=>b.total-a.total);
+    showAggregate(list, sq?`Squad ${sq}`:(bu?`BU ${bu}`:"Toda la red"));
+  } else showDist(v);
+});
+distBUSel.addEventListener("change",()=>{refreshDistSquads();refreshDistOptions("__ALL__");});
+distSqSel.addEventListener("change",()=>refreshDistOptions("__ALL__"));
+refreshDistSquads();
+refreshDistOptions();
 
 /* ------------ MATRIX ------------ */
 const buSel=document.getElementById("matBU"), sqSel=document.getElementById("matSquad");
-[...new Set(DISTS.map(d=>d.bu))].forEach(b=>buSel.insertAdjacentHTML("beforeend",`<option>${b}</option>`));
+[...new Set(DISTS76.map(d=>d.bu))].forEach(b=>buSel.insertAdjacentHTML("beforeend",`<option>${b}</option>`));
 function refreshSquads(){
   const bu=buSel.value; sqSel.innerHTML='<option value="">Todos los squads</option>';
-  [...new Set(DISTS.filter(d=>!bu||d.bu===bu).map(d=>d.squad))].forEach(s=>sqSel.insertAdjacentHTML("beforeend",`<option>${s}</option>`));
+  [...new Set(DISTS76.filter(d=>!bu||d.bu===bu).map(d=>d.squad))].forEach(s=>sqSel.insertAdjacentHTML("beforeend",`<option>${s}</option>`));
 }
 refreshSquads();
 function renderMatrix(){
   const q=document.getElementById("matSearch").value.toLowerCase();
   const bu=buSel.value, sq=sqSel.value, sort=document.getElementById("matSort").value;
-  let rows=DISTS.filter(d=>(!bu||d.bu===bu)&&(!sq||d.squad===sq)&&d.name.toLowerCase().includes(q));
+  let rows=DISTS76.filter(d=>(!bu||d.bu===bu)&&(!sq||d.squad===sq)&&d.name.toLowerCase().includes(q));
   rows.sort((a,b)=> sort==="name"?a.name.localeCompare(b.name):b.total-a.total);
   const t=document.getElementById("matTable");
   t.innerHTML=`<thead><tr><th class="name">Distribuidor</th><th>BU · Squad</th><th>Total</th>${COMPS.map(c=>`<th title="${c.label} · peso ${c.w}%">${c.short}</th>`).join("")}</tr></thead>
@@ -595,21 +671,21 @@ function rankList(el,arr){
     <span class="nm">${i+1}. ${d.name}<span class="pill">${d.squad}</span></span>
     <span class="sc" style="color:${colorOf(d.total)}">${d.total}%</span></li>`).join("");
 }
-const bySc=DISTS.slice().sort((a,b)=>b.total-a.total);
+const bySc=DISTS76.slice().sort((a,b)=>b.total-a.total);
 rankList("rankTop",bySc.slice(0,10));
 rankList("rankBottom",bySc.slice(-10).reverse());
 // leaders per competency
 document.getElementById("leadTable").innerHTML=
   `<thead><tr><th class="name">Competencia</th><th>Peso</th><th>Líder</th><th>Score</th><th>Prom. red</th></tr></thead>
-   <tbody>${COMPS.map(c=>{const best=DISTS.slice().sort((a,b)=>b.scores[c.key]-a.scores[c.key])[0];
+   <tbody>${COMPS.map(c=>{const best=DISTS76.slice().sort((a,b)=>b.scores[c.key]-a.scores[c.key])[0];
    return `<tr><td class="name">${c.label}</td><td>${c.w}%</td><td class="name">${best.name}</td>
    <td class="cell ${cls(best.scores[c.key])}">${best.scores[c.key]}</td>
    <td class="cell ${cls(netAvg[c.key])}">${netAvg[c.key]}</td></tr>`;}).join("")}</tbody>`;
 
 /* ------------ BU / SQUAD ------------ */
-const squads=[...new Set(DISTS.map(d=>d.bu+" · "+d.squad))].map(key=>{
+const squads=[...new Set(DISTS76.map(d=>d.bu+" · "+d.squad))].map(key=>{
   const [bu,squad]=key.split(" · ");
-  const grp=DISTS.filter(d=>d.bu===bu&&d.squad===squad);
+  const grp=DISTS76.filter(d=>d.bu===bu&&d.squad===squad);
   const s={};COMPS.forEach(c=>s[c.key]=avg(grp.map(d=>d.scores[c.key])));
   return {bu,squad,n:grp.length,total:avg(grp.map(d=>d.total)),scores:s};
 }).sort((a,b)=>b.total-a.total);
@@ -629,15 +705,78 @@ document.getElementById("squadTable").innerHTML=
    <td class="cell ${cls(s.total)}">${s.total}</td>
    ${COMPS.map(c=>`<td class="cell ${cls(s.scores[c.key])}">${s.scores[c.key]}</td>`).join("")}</tr>`).join("")}</tbody>`;
 
-/* ------------ COMPETENCIAS (definiciones + subtemas) ------------ */
+/* ------------ COMPETENCIAS (definiciones + análisis por competencia) ------------ */
 document.getElementById("defGrid").innerHTML=COMPS.map((c,i)=>`
-  <div class="defcard">
+  <div class="defcard" data-key="${c.key}">
     <div class="h"><span class="num">${i+1}</span><span class="t">${c.label}</span><span class="w">Peso ${c.w}%</span></div>
     <div class="d">${c.def}</div>
+    <div class="pill" style="margin-top:8px;display:inline-block">Prom. red ${netAvg[c.key]}% · ver análisis ▸</div>
   </div>`).join("");
-document.getElementById("gerSubs").innerHTML=GER_SUBS.map(s=>`
-  <div class="subitem"><span class="lab">${s[0]}</span>
-  <span class="w" style="margin:0">Peso ${s[1]}%</span></div>`).join("");
+
+let compChart=null;
+function showComp(key){
+  const c=COMPS.find(x=>x.key===key);
+  const card=document.getElementById("compDetailCard");
+  card.style.display="";
+  document.querySelectorAll("#defGrid .defcard").forEach(el=>el.classList.toggle("active", el.dataset.key===key));
+  const netv=netAvg[key];
+  const sorted=[...DISTS76].sort((a,b)=>b.scores[key]-a.scores[key]);
+  const top=sorted.slice(0,5), bottom=sorted.slice(-5).reverse();
+  const bus=[...new Set(DISTS76.map(d=>d.bu))];
+  const byBU=bus.map(bu=>({bu, v:avg(DISTS76.filter(d=>d.bu===bu).map(d=>d.scores[key]))}))
+    .sort((a,b)=>b.v-a.v);
+  const nAbove=DISTS76.filter(d=>d.scores[key]>=80).length;
+  const nBelow=DISTS76.filter(d=>d.scores[key]<=69).length;
+  const subsHtml = key==="ger" ? `
+    <div style="margin-top:8px">
+      <h3>Subtemas de la competencia (ponderación)</h3>
+      <p class="sub" style="margin-top:2px">Cada competencia se descompone en subtemas ponderados. Los 11 subtemas de la Visión Estratégica / Gerencial:</p>
+      ${GER_SUBS.map(s=>`<div class="subitem"><span class="lab">${s[0]}</span>
+        <span class="w" style="margin:0">Peso ${s[1]}%</span></div>`).join("")}
+    </div>` : "";
+  document.getElementById("compDetail").innerHTML=`
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center">
+      <div><strong style="font-size:18px;color:var(--bayer-blue)">${c.label}</strong>
+      <div class="pill">Peso ${c.w}% en el score total</div></div>
+      <span class="badge ${cls(netv)}" style="font-size:16px">Prom. red ${netv}%</span>
+    </div>
+    <p class="sub" style="margin-top:8px">${c.def}</p>
+    <div class="grid kpis" style="margin-top:12px">
+      <div class="kpi"><div class="n" style="color:${colorOf(netv)}">${netv}%</div><div class="l">Promedio de red</div></div>
+      <div class="kpi"><div class="n" style="color:var(--green)">${nAbove}</div><div class="l">Distribuidores ≥ 80%</div></div>
+      <div class="kpi"><div class="n" style="color:var(--red)">${nBelow}</div><div class="l">Distribuidores ≤ 69%</div></div>
+      <div class="kpi"><div class="n">${sorted[0].scores[key]}%</div><div class="l">Máximo de la red</div></div>
+    </div>
+    <div class="two" style="margin-top:16px">
+      <div>
+        <h3>Desempeño por BU</h3>
+        ${byBU.map(b=>`<div class="subitem">
+          <span class="lab">${b.bu}</span>
+          <span class="bar"><i style="width:${b.v}%;background:${colorOf(b.v)}"></i></span>
+          <span class="val" style="color:${colorOf(b.v)}">${b.v}%</span></div>`).join("")}
+        ${subsHtml}
+      </div>
+      <div class="chartbox"><canvas id="chartComp"></canvas></div>
+    </div>
+    <div class="two" style="margin-top:8px">
+      <div><h3 style="color:#2e9e5b">Top 5 en esta competencia</h3><ul class="notes">
+        ${top.map(d=>`<li><strong>${d.name}:</strong> ${d.scores[key]}% <span class="pill">${d.bu}</span></li>`).join("")}</ul></div>
+      <div><h3 style="color:#d6453d">Foco / menores 5</h3><ul class="notes">
+        ${bottom.map(d=>`<li><strong>${d.name}:</strong> ${d.scores[key]}% <span class="pill">${d.bu}</span></li>`).join("")}</ul></div>
+    </div>`;
+  if(compChart)compChart.destroy();
+  compChart=new Chart(document.getElementById("chartComp"),{
+    type:"bar",
+    data:{labels:byBU.map(b=>b.bu),
+      datasets:[{label:c.short,data:byBU.map(b=>b.v),backgroundColor:byBU.map(b=>colorOf(b.v))}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
+      scales:{x:{min:0,max:100}},
+      plugins:{legend:{display:false},title:{display:true,text:"Promedio por BU · "+c.label}}}
+  });
+  card.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+document.querySelectorAll("#defGrid .defcard").forEach(el=>
+  el.addEventListener("click",()=>showComp(el.dataset.key)));
 
 /* ------------ DIGITALIZACIÓN ------------ */
 document.getElementById("digSubs").innerHTML=DIG_SUBS.map(s=>`
@@ -740,15 +879,30 @@ const ASSESS = [
   ["MAINET SRL","Sur","Núcleo Norte",false],
   ["BONAMICO AGUIRRE SAS","Sur","Núcleo Norte",false],
   ["ANBAU SUDESTE SA","Sur","Sur",false],
-].map(r=>({name:r[0],bu:r[1],squad:r[2],ass:r[3]}));
+].map(r=>({name:r[0],bu:r[1],squad:r[2],assXls:r[3]}));
+
+// Assessment combinado: un distribuidor está evaluado si aparece en la PPT (por nombre) O tiene marca SI en el Excel.
+(function(){
+  const norm = s => s.toUpperCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/\(.*?\)/g," ").replace(/&/g," Y ").replace(/SOCIEDAD ANONIMA/g," ")
+    .replace(/S\.R\.L\.?|S\.A\.?|\bSRL\b|\bSA\b|\bSAS\b|\bS R L\b|\bS A\b/g," ")
+    .replace(/[^A-Z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  const ALIAS={[norm("EMPRESA DE TRABAJOS TECNICO AGROPECUARIOS S.R.L.")]:norm("ETTA")};
+  const pptSet=new Set(DISTS.map(d=>norm(d.name)));
+  const pptByNorm={}; DISTS.forEach(d=>pptByNorm[norm(d.name)]=d);
+  ASSESS.forEach(x=>{
+    const n=norm(x.name);
+    const inPpt = pptSet.has(n) || (ALIAS[n]&&pptSet.has(ALIAS[n]));
+    x.inPpt = !!inPpt;
+    x.pptTotal = pptByNorm[n] ? pptByNorm[n].total : (ALIAS[n]&&pptByNorm[ALIAS[n]] ? pptByNorm[ALIAS[n]].total : null);
+    x.ass = x.assXls || x.inPpt; // cobertura real combinada
+  });
+})();
 
 const covTotal=ASSESS.length;
 const covCon=ASSESS.filter(d=>d.ass).length;
 const covSin=covTotal-covCon;
-document.getElementById("c-total").textContent=covTotal;
-document.getElementById("c-con").textContent=covCon;
-document.getElementById("c-sin").textContent=covSin;
-document.getElementById("c-pct").textContent=Math.round(covCon/covTotal*100)+"%";
 
 // KPIs + charts en el inicio (Análisis General)
 document.getElementById("g-total").textContent=covTotal;
@@ -769,8 +923,23 @@ document.getElementById("g-pct").textContent=Math.round(covCon/covTotal*100)+"%"
           <span class="nm">${d.name}</span><span class="mt">${d.bu} · ${d.squad}</span></div>`).join("")}
       </div>
     </div>`;
-  const kpi=document.getElementById("g-sin-kpi"), panel=document.getElementById("g-sin-panel");
-  kpi.addEventListener("click",()=>{kpi.classList.toggle("open");panel.classList.toggle("open");});
+
+  // Desplegable con la lista de razones sociales CON assessment
+  const conList=ASSESS.filter(d=>d.ass)
+    .sort((a,b)=>a.bu.localeCompare(b.bu)||a.squad.localeCompare(b.squad)||a.name.localeCompare(b.name));
+  document.getElementById("g-con-panel").innerHTML=`
+    <div class="pendbox" style="border-color:var(--green);background:var(--green-bg)">
+      <h4 style="color:#1c6b3c">${conList.length} razones sociales con assessment</h4>
+      <div class="pendgrid">
+        ${conList.map((d,i)=>`<div class="it" style="border-bottom-color:rgba(46,158,91,.3)"><span class="idx" style="color:#1c6b3c">${i+1}</span>
+          <span class="nm">${d.name}</span><span class="mt">${d.bu}${d.pptTotal!=null?' · '+d.pptTotal+'%':''}</span></div>`).join("")}
+      </div>
+    </div>`;
+
+  [["g-con-kpi","g-con-panel"],["g-sin-kpi","g-sin-panel"]].forEach(([k,p])=>{
+    const kpi=document.getElementById(k), panel=document.getElementById(p);
+    kpi.addEventListener("click",()=>{kpi.classList.toggle("open");panel.classList.toggle("open");});
+  });
 })();
 new Chart(document.getElementById("chartCovDonutTop"),{
   type:"doughnut",
@@ -794,29 +963,6 @@ new Chart(document.getElementById("chartCovDonutTop"),{
   });
 })();
 
-// Donut
-new Chart(document.getElementById("chartCovDonut"),{
-  type:"doughnut",
-  data:{labels:["Con assessment","Sin assessment"],
-    datasets:[{data:[covCon,covSin],backgroundColor:[getCSS("--green"),getCSS("--red")]}]},
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:"bottom"},title:{display:true,text:"Estado global del padrón 2026"}}}
-});
-
-// By BU stacked
-const covBUs=[...new Set(ASSESS.map(d=>d.bu))];
-new Chart(document.getElementById("chartCovBU"),{
-  type:"bar",
-  data:{labels:covBUs,
-    datasets:[
-      {label:"Con assessment",data:covBUs.map(bu=>ASSESS.filter(d=>d.bu===bu&&d.ass).length),backgroundColor:getCSS("--green")},
-      {label:"Sin assessment",data:covBUs.map(bu=>ASSESS.filter(d=>d.bu===bu&&!d.ass).length),backgroundColor:getCSS("--red")}
-    ]},
-  options:{responsive:true,maintainAspectRatio:false,
-    scales:{x:{stacked:true},y:{stacked:true}},
-    plugins:{legend:{position:"bottom"},title:{display:true,text:"Distribuidores por BU"}}}
-});
-
 // Coverage table by BU/Squad
 (function(){
   const groups={};
@@ -833,23 +979,6 @@ new Chart(document.getElementById("chartCovBU"),{
      <tr style="font-weight:800;background:var(--bg)"><td class="name">TOTAL</td><td></td>
        <td>${covTotal}</td><td>${covCon}</td><td>${covSin}</td><td>${Math.round(covCon/covTotal*100)}%</td></tr></tbody>`;
 })();
-
-// Pending list
-const pendBUSel=document.getElementById("pendBU");
-[...new Set(ASSESS.filter(d=>!d.ass).map(d=>d.bu))].forEach(b=>pendBUSel.insertAdjacentHTML("beforeend",`<option>${b}</option>`));
-function renderPend(){
-  const q=document.getElementById("pendSearch").value.toLowerCase();
-  const bu=pendBUSel.value;
-  let rows=ASSESS.filter(d=>!d.ass&&(!bu||d.bu===bu)&&d.name.toLowerCase().includes(q))
-    .sort((a,b)=>a.bu.localeCompare(b.bu)||a.squad.localeCompare(b.squad)||a.name.localeCompare(b.name));
-  document.getElementById("pendTable").innerHTML=
-    `<thead><tr><th>#</th><th class="name">Distribuidor</th><th>BU</th><th>Squad</th></tr></thead>
-     <tbody>${rows.map((d,i)=>`<tr><td>${i+1}</td><td class="name">${d.name}</td>
-       <td class="grp">${d.bu}</td><td class="grp">${d.squad}</td></tr>`).join("")}</tbody>`;
-}
-document.getElementById("pendSearch").addEventListener("input",renderPend);
-pendBUSel.addEventListener("change",renderPend);
-renderPend();
 
 /* ------------ TABS ------------ */
 document.querySelectorAll("nav.tabs button[data-tab]").forEach(b=>b.addEventListener("click",()=>{
