@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnePage · Árbol de Decisión · Siembras Propias</title>
+<style>
+  :root{
+    --navy-0:#041826;
+    --navy-1:#062035;
+    --navy-2:#0a2f4d;
+    --navy-3:#0d3a5c;
+    --cyan:#00B7E8;
+    --cyan-bright:#00D1FF;
+    --lime:#8DC63F;
+    --lime-bright:#A5DB57;
+    --amber:#ffb84d;
+    --txt:#EAF2F8;
+    --txt-dim:#9FB6C9;
+    --card:rgba(255,255,255,0.04);
+    --card-bd:rgba(0,183,232,0.22);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Segoe UI',Helvetica,Arial,sans-serif;
+    background:#02121e;
+    color:var(--txt);
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    width:1240px;
+    margin:0 auto;
+    background:
+      radial-gradient(1100px 600px at 78% -8%, rgba(0,183,232,0.16), transparent 60%),
+      radial-gradient(900px 500px at -5% 105%, rgba(141,198,63,0.12), transparent 55%),
+      linear-gradient(155deg,var(--navy-0) 0%,var(--navy-1) 45%,var(--navy-2) 100%);
+    position:relative;
+    overflow:hidden;
+  }
+  .deco{position:absolute;pointer-events:none;opacity:.5;}
+  .ring{border:1px solid rgba(0,183,232,.35);border-radius:50%;}
+  .ring.r1{width:240px;height:240px;top:-70px;right:240px;opacity:.25;}
+  .ring.r2{width:90px;height:90px;top:60px;right:90px;opacity:.3;}
+  .dashrow{position:absolute;top:120px;right:60px;display:flex;gap:8px;}
+  .dashrow span{height:6px;border-radius:4px;}
+
+  /* HEADER */
+  header{display:flex;align-items:flex-start;justify-content:space-between;padding:34px 56px 0 56px;position:relative;z-index:3;}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand .mark{width:46px;height:46px;border-radius:50%;background:conic-gradient(from 200deg,var(--cyan),var(--lime),var(--cyan));display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(0,183,232,.45);position:relative;}
+  .brand .mark::after{content:"";width:30px;height:30px;border-radius:50%;background:var(--navy-1);border:2px solid rgba(255,255,255,.15);}
+  .brand .mark::before{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:var(--lime-bright);z-index:2;}
+  .brand .btxt b{font-size:18px;letter-spacing:.3px;}
+  .brand .btxt span{display:block;font-size:10px;letter-spacing:2.4px;color:var(--cyan-bright);font-weight:700;margin-top:2px;}
+  .bayer{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.25);overflow:hidden;}
+  .bayer svg{width:100%;height:100%;display:block;}
+
+  /* TITLE */
+  .titlewrap{padding:18px 56px 8px 56px;position:relative;z-index:3;}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:3px;font-weight:700;color:var(--txt-dim);text-transform:uppercase;margin-bottom:8px;}
+  h1{font-size:44px;line-height:1.16;font-weight:800;letter-spacing:-.5px;padding-bottom:4px;background:linear-gradient(100deg,var(--cyan-bright) 5%,var(--lime) 95%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .subtitle{font-size:15px;color:var(--txt-dim);margin-top:10px;max-width:860px;line-height:1.5;}
+  .accent-line{height:4px;width:120px;border-radius:3px;margin-top:14px;background:linear-gradient(90deg,var(--cyan),var(--lime));}
+
+  .seclabel{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:2px;font-weight:800;text-transform:uppercase;color:#fff;background:linear-gradient(90deg,var(--cyan),rgba(0,183,232,.05));padding:6px 16px 6px 12px;border-radius:5px;margin-bottom:14px;border-left:3px solid var(--lime);}
+
+  .grid{padding:22px 56px 0 56px;position:relative;z-index:3;}
+
+  /* TREE GRID */
+  .tree-grid{display:grid;grid-template-columns:0.78fr 1.18fr 1.04fr;gap:18px;}
+
+  .cat-card{border-radius:14px;padding:18px 20px;border:1px solid;border-top:4px solid;}
+  .cat-card.cyan{border-color:rgba(0,183,232,.3);border-top-color:var(--cyan-bright);background:linear-gradient(180deg,rgba(0,183,232,.12),rgba(0,183,232,.02));}
+  .cat-card.lime{border-color:rgba(141,198,63,.32);border-top-color:var(--lime-bright);background:linear-gradient(180deg,rgba(141,198,63,.14),rgba(141,198,63,.02));}
+  .cat-card.amber{border-color:rgba(255,184,77,.32);border-top-color:var(--amber);background:linear-gradient(180deg,rgba(255,184,77,.14),rgba(255,184,77,.02));}
+  .cat-card h3{font-size:15px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:.2px;}
+  .cat-card p{font-size:12px;color:var(--txt-dim);line-height:1.55;}
+  .cat-card p b{color:var(--txt);}
+
+  .connector-row{display:grid;grid-template-columns:0.78fr 1.18fr 1.04fr;gap:18px;margin:2px 0;}
+  .arrow-down{width:2px;height:26px;margin:0 auto;position:relative;}
+  .arrow-down::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);border:7px solid transparent;}
+  .arrow-down.cyan{background:var(--cyan-bright);}
+  .arrow-down.cyan::after{border-top-color:var(--cyan-bright);}
+  .arrow-down.lime{background:var(--lime-bright);}
+  .arrow-down.lime::after{border-top-color:var(--lime-bright);}
+  .arrow-down.amber{background:var(--amber);}
+  .arrow-down.amber::after{border-top-color:var(--amber);}
+
+  .lane{border-radius:16px;padding:20px 18px;border:1px solid;background:rgba(255,255,255,.02);display:flex;flex-direction:column;}
+  .lane.cyan{border-color:rgba(0,183,232,.22);}
+  .lane.lime{border-color:rgba(141,198,63,.24);}
+  .lane.amber{border-color:rgba(255,184,77,.26);}
+  .lane-tag{display:inline-flex;align-self:flex-start;font-size:10px;letter-spacing:1.6px;font-weight:800;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:16px;}
+  .lane-tag.cyan{background:rgba(0,183,232,.16);color:var(--cyan-bright);border:1px solid rgba(0,183,232,.4);}
+  .lane-tag.lime{background:rgba(141,198,63,.16);color:var(--lime-bright);border:1px solid rgba(141,198,63,.4);}
+  .lane-tag.amber{background:rgba(255,184,77,.16);color:var(--amber);border:1px solid rgba(255,184,77,.4);}
+
+  .node{border-radius:12px;padding:16px 16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);}
+  .node .n-eyebrow{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt-dim);font-weight:700;margin-bottom:8px;display:block;}
+  .node .n-big{font-size:32px;font-weight:800;line-height:1;color:#fff;}
+  .node .n-copy{font-size:11.5px;color:var(--txt-dim);line-height:1.5;margin-top:8px;}
+
+  .plan-node{border-radius:12px;padding:16px 16px;border:1px dashed rgba(0,183,232,.35);background:rgba(0,183,232,.05);}
+  .plan-node .lbl{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan-bright);font-weight:800;display:block;margin-bottom:12px;}
+  .plan-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:9px;}
+  .plan-step:last-child{margin-bottom:0;}
+  .plan-step .sn{flex:none;width:21px;height:21px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--lime));color:var(--navy-1);font-weight:800;font-size:10.5px;display:flex;align-items:center;justify-content:center;}
+  .plan-step span{font-size:12px;color:var(--txt);line-height:1.45;}
+
+  .done-pill{align-self:center;margin-top:14px;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--lime-bright);background:rgba(141,198,63,.14);border:1px solid rgba(141,198,63,.4);padding:7px 18px;border-radius:999px;}
+
+  /* context split 25/33 */
+  .context-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .cx-cell{border-radius:10px;padding:14px 12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);text-align:center;}
+  .cx-num{font-size:28px;font-weight:800;color:#fff;line-height:1;}
+  .cx-num.lime{color:var(--lime-bright);}
+  .cx-num.amber{color:var(--amber);}
+  .cx-lbl{font-size:10px;color:var(--txt-dim);margin-top:7px;line-height:1.4;}
+
+  /* fork */
+  .fork-wrap{position:relative;padding-top:24px;margin-top:2px;}
+  .fork-wrap::before{content:"";position:absolute;top:0;left:50%;width:2px;height:11px;background:var(--lime-bright);transform:translateX(-50%);}
+  .fork-h{position:absolute;top:11px;left:25%;right:25%;height:2px;background:var(--lime-bright);}
+  .fork-drop{position:absolute;top:11px;width:2px;height:13px;background:var(--lime-bright);}
+  .fork-drop.l{left:25%;}
+  .fork-drop.r{right:25%;}
+  .fork-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .fork-wrap.amber::before{background:var(--amber);}
+  .fork-wrap.amber .fork-h{background:var(--amber);}
+  .fork-wrap.amber .fork-drop{background:var(--amber);}
+  .transition-lbl{text-align:center;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--txt-dim);font-weight:700;margin:14px 0 2px 0;}
+
+  .scenario{border-radius:12px;padding:15px 16px;border:1px solid;}
+  .scenario.save{border-color:rgba(141,198,63,.35);background:linear-gradient(180deg,rgba(141,198,63,.12),rgba(141,198,63,.02));}
+  .scenario.cost{border-color:rgba(255,184,77,.35);background:linear-gradient(180deg,rgba(255,184,77,.12),rgba(255,184,77,.02));}
+  .scenario .sc-lbl{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;font-weight:800;margin-bottom:8px;display:block;}
+  .scenario.save .sc-lbl{color:var(--lime-bright);}
+  .scenario.cost .sc-lbl{color:var(--amber);}
+  .scenario .sc-desc{font-size:11px;color:var(--txt-dim);line-height:1.5;margin-bottom:12px;}
+  .sc-num-row{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--txt);margin-bottom:6px;}
+  .sc-num-row span{flex:1 1 auto;}
+  .sc-num-row b{color:#fff;flex:none;white-space:nowrap;text-align:right;}
+  .sc-total{margin-top:9px;padding-top:9px;border-top:1px dashed rgba(255,255,255,.15);display:flex;flex-direction:column;gap:4px;}
+  .sc-total .st-label{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;font-weight:700;color:var(--txt-dim);}
+  .sc-total .st-value{font-size:17px;font-weight:800;white-space:nowrap;}
+  .scenario.save .st-value{color:var(--lime-bright);}
+  .scenario.cost .st-value{color:var(--amber);}
+
+  .baseline{margin-top:16px;border-radius:12px;padding:14px 18px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);display:flex;align-items:center;gap:16px;}
+  .baseline .bl-tag{flex:none;font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:var(--txt-dim);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;text-align:center;}
+  .baseline .bl-copy{font-size:11.5px;color:var(--txt);line-height:1.55;}
+  .baseline .bl-copy b{color:#fff;}
+
+  .note-asterisk{margin-top:12px;font-size:10.5px;color:var(--txt-dim);line-height:1.55;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.16);}
+  .note-asterisk b{color:var(--cyan-bright);}
+
+  .standby-wrap{flex:1;display:flex;align-items:center;justify-content:center;}
+  .standby-card{border-radius:14px;padding:28px 18px;text-align:center;border:1px dashed rgba(255,184,77,.5);background:rgba(255,184,77,.06);display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .standby-icon{width:42px;height:42px;border-radius:50%;background:rgba(255,184,77,.16);border:1px solid rgba(255,184,77,.4);display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--amber);}
+  .standby-badge{font-size:10px;letter-spacing:1.6px;font-weight:800;text-transform:uppercase;color:var(--amber);background:rgba(255,184,77,.14);border:1px solid rgba(255,184,77,.4);padding:6px 15px;border-radius:999px;}
+  .standby-card p{font-size:11.5px;color:var(--txt-dim);line-height:1.55;max-width:220px;}
+
+  .legend-row{display:flex;gap:22px;flex-wrap:wrap;font-size:11px;color:var(--txt-dim);margin-top:16px;}
+  .legend-row span{display:inline-flex;align-items:center;gap:7px;}
+  .legend-row i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+  /* footer */
+  footer{margin-top:26px;padding:16px 56px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:3;border-top:1px solid rgba(255,255,255,.07);}
+  footer .url{font-size:11px;color:var(--txt-dim);letter-spacing:.5px;}
+  footer .tag-bayer{font-size:14px;font-style:italic;color:var(--txt);}
+  footer .tag-bayer b{font-style:normal;font-weight:800;}
+  .footbar{height:10px;background:linear-gradient(90deg,var(--lime),var(--cyan),var(--lime));}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="bayer-cross" viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="bayerGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#0098D8"/>
+        <stop offset="0.5" stop-color="#36A935"/>
+        <stop offset="1" stop-color="#96D700"/>
+      </linearGradient>
+    </defs>
+    <g fill="url(#bayerGrad)" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="19" text-anchor="middle" dominant-baseline="central">
+      <text x="50" y="20">B</text><text x="50" y="35">A</text><text x="50" y="50">Y</text><text x="50" y="65">E</text><text x="50" y="80">R</text>
+      <text x="20" y="50">B</text><text x="35" y="50">A</text><text x="65" y="50">E</text><text x="80" y="50">R</text>
+    </g>
+  </symbol>
+</svg>
+<div class="page">
+  <div class="deco ring r1"></div>
+  <div class="deco ring r2"></div>
+  <div class="dashrow">
+    <span style="width:34px;background:var(--cyan)"></span>
+    <span style="width:14px;background:var(--lime)"></span>
+    <span style="width:14px;background:var(--cyan)"></span>
+  </div>
+
+  <header>
+    <div class="brand">
+      <div class="mark"></div>
+      <div class="btxt">
+        <b>Estrategia Comercial</b>
+        <span>SIEMBRAS PROPIAS · GTM</span>
+      </div>
+    </div>
+    <div class="bayer"><svg viewBox="0 0 100 100"><use href="#bayer-cross"/></svg></div>
+  </header>
+
+  <div class="titlewrap">
+    <span class="kicker">One Page · Árbol de Decisión</span>
+    <h1>Árbol de Decisión y Plan de Acción</h1>
+    <div class="subtitle">A partir de las tres categorías relevadas en el Proyecto Siembras Propias, este esquema define el camino a seguir para cada una: qué debe suceder, quién lo ejecuta y cuál es el impacto económico de cada definición.</div>
+    <div class="accent-line"></div>
+  </div>
+
+  <!-- PASO 1: LAS TRES CATEGORÍAS -->
+  <div class="grid">
+    <div class="seclabel">Paso 1 · Las tres categorías</div>
+    <div class="tree-grid">
+      <div class="cat-card cyan">
+        <h3>Siembra Propia</h3>
+        <p>HAS asociadas al <b>mismo CUIT y razón social</b> que comercializa con Bayer. Si el distribuidor siembra con su propia razón social, debe abrir una <b>cuenta productor</b> para cargar sus HAS.</p>
+      </div>
+      <div class="cat-card lime">
+        <h3>Cuenta Asociada</h3>
+        <p>Siembra propia del distribuidor pero bajo <b>otra razón social</b>. Categoría ya existente en SAP y Salesforce: se reclasifica el CUIT como <b>cuenta asociada</b>.</p>
+      </div>
+      <div class="cat-card amber">
+        <h3>Siembra Asociada</h3>
+        <p>El dueño del distribuidor <b>participa en una sociedad</b> junto a otros socios. No existe hoy como categoría formal: falta definir si se encuadra como productor o como cuenta asociada.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONECTOR -->
+  <div class="grid">
+    <div class="connector-row">
+      <div class="arrow-down cyan"></div>
+      <div class="arrow-down lime"></div>
+      <div class="arrow-down amber"></div>
+    </div>
+  </div>
+
+  <!-- PASO 2: CAMINOS -->
+  <div class="grid">
+    <div class="seclabel">Paso 2 · Camino y plan de acción por categoría</div>
+    <div class="tree-grid">
+
+      <!-- LANE 1: SIEMBRA PROPIA -->
+      <div class="lane cyan">
+        <span class="lane-tag cyan">Siembra Propia</span>
+        <div class="node">
+          <span class="n-eyebrow">Cantidad de cuentas</span>
+          <span class="n-big">32</span>
+          <p class="n-copy">Distribuidores con siembra propia que hoy <b style="color:var(--txt)">no</b> tienen abierta una cuenta productor para cargar sus HAS.</p>
+        </div>
+        <div class="arrow-down cyan"></div>
+        <div class="plan-node">
+          <span class="lbl">Plan de acción</span>
+          <div class="plan-step"><span class="sn">1</span><span>Validar con squad coaches</span></div>
+          <div class="plan-step"><span class="sn">2</span><span>RVs y ACs abren las cuentas y cargan las HAS faltantes</span></div>
+        </div>
+        <span class="done-pill">✓ Listo</span>
+      </div>
+
+      <!-- LANE 2: CUENTA ASOCIADA -->
+      <div class="lane lime">
+        <span class="lane-tag lime">Cuenta Asociada</span>
+        <div class="node">
+          <span class="n-eyebrow">Situación de cuentas</span>
+          <div class="context-split">
+            <div class="cx-cell">
+              <div class="cx-num lime">25</div>
+              <div class="cx-lbl">cuentas ya categorizadas como <b style="color:var(--txt)">Cuenta Asociada</b> en SAP</div>
+            </div>
+            <div class="cx-cell">
+              <div class="cx-num amber">33</div>
+              <div class="cx-lbl">cuentas hoy como <b style="color:var(--txt)">Cuenta Productor</b> que deberían ser Cuenta Asociada</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="baseline">
+          <span class="bl-tag">Camino actual<br>(vigente hoy)</span>
+          <p class="bl-copy">Hoy se pagan <b>US$ 2.532.455</b> en bonos y <b>US$ 1.032.974</b> en comisiones sobre las 33 cuentas mal categorizadas → total <b>US$ 3.565.469</b>.</p>
+        </div>
+
+        <div class="transition-lbl">▾ A partir de acá, dos caminos posibles ▾</div>
+
+        <div class="fork-wrap">
+          <div class="fork-h"></div>
+          <div class="fork-drop l"></div>
+          <div class="fork-drop r"></div>
+          <div class="fork-cols">
+            <div class="scenario save">
+              <span class="sc-lbl">Camino 1 · Recategorizar a Cuenta Asociada</span>
+              <p class="sc-desc">Las 33 cuentas hoy tratadas como productor pasan a Cuenta Asociada y dejan de percibir bonos y comisiones.</p>
+              <div class="sc-num-row"><span>Bonos que se dejan de pagar</span><b>US$ 2.535.538</b></div>
+              <div class="sc-num-row"><span>Comisiones que se dejan de pagar</span><b>US$ 1.033.618</b></div>
+              <div class="sc-total"><span class="st-label">Ahorro total · ya no se paga</span><span class="st-value">US$ 3.569.156</span></div>
+            </div>
+            <div class="scenario cost">
+              <span class="sc-lbl">Camino 2 · Pasar a Cuenta Productor</span>
+              <p class="sc-desc">Las 25 cuentas hoy Cuenta Asociada pasan a tratarse como Cuenta Productor y comienzan a percibir bonos y comisiones.</p>
+              <div class="sc-num-row"><span>Comisiones a pagar</span><b>US$ 1.085.267</b></div>
+              <div class="sc-num-row"><span>Bonos a pagar</span><b>US$ 2.869.264</b></div>
+              <div class="sc-total"><span class="st-label">Costo total · nuevo pago</span><span class="st-value">US$ 3.954.531</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-asterisk">* Los cálculos asumen una <b>comisión del 5,5%</b>, <b>bono DK del 8%</b> y <b>bono CP del 7%</b>.</div>
+      </div>
+
+      <!-- LANE 3: SIEMBRA ASOCIADA -->
+      <div class="lane amber">
+        <span class="lane-tag amber">Siembra Asociada</span>
+
+        <div class="baseline">
+          <span class="bl-tag">Camino actual<br>(vigente hoy)</span>
+          <p class="bl-copy">Se mantiene la categoría <b>Productor</b> como hoy. Se pagan <b>US$ 756.807</b> en bonos y <b>US$ 200.569</b> en comisiones → total <b>US$ 957.377</b>.</p>
+        </div>
+
+        <div class="transition-lbl">▾ A partir de acá, dos caminos posibles ▾</div>
+
+        <div class="fork-wrap amber">
+          <div class="fork-h"></div>
+          <div class="fork-drop l"></div>
+          <div class="fork-drop r"></div>
+          <div class="fork-cols">
+            <div class="scenario save">
+              <span class="sc-lbl">Camino 1 · Recategorizar a Cuenta Asociada</span>
+              <p class="sc-desc">Pasan a ser Cuenta Asociada en SAP: no se paga bono ni comisiones sobre estas cuentas.</p>
+              <div class="sc-num-row"><span>Bonos que se dejan de pagar</span><b>US$ 756.807</b></div>
+              <div class="sc-num-row"><span>Comisiones que se dejan de pagar</span><b>US$ 200.569</b></div>
+              <div class="sc-total"><span class="st-label">Ahorro total · ya no se paga</span><span class="st-value">US$ 957.377</span></div>
+            </div>
+            <div class="scenario cost">
+              <span class="sc-lbl">Camino 2 · Bono reducido, sin comisión de cobranza</span>
+              <p class="sc-desc">Se elimina la comisión de cobranza y se paga el 50% de los bonos sobre estas cuentas.</p>
+              <div class="sc-num-row"><span>Comisión de cobranza</span><b>US$ 0</b></div>
+              <div class="sc-num-row"><span>Bonos a pagar (50%)</span><b>US$ 378.403</b></div>
+              <div class="sc-total"><span class="st-label">Pago total · nuevo esquema</span><span class="st-value">US$ 378.403</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legend-row">
+      <span><i style="background:var(--cyan-bright)"></i>Siembra Propia · acción en curso</span>
+      <span><i style="background:var(--lime-bright)"></i>Cuenta Asociada · impacto económico a decidir</span>
+      <span><i style="background:var(--amber)"></i>Siembra Asociada · impacto económico a decidir</span>
+    </div>
+  </div>
+
+  <footer>
+    <span class="url">agro.bayer.com.ar · Documento interno — Restricted</span>
+    <span class="tag-bayer">Si es Agro, <b>es Bayer</b></span>
+  </footer>
+  <div class="footbar"></div>
+</div>
+</body>
+</html>
